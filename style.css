@@ -1,0 +1,46 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #3454df;
+}
+
+.container {
+  max-width: 250px;
+  margin: auto;
+  margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  border: 1px solid white;
+  padding: 3rem;
+}
+
+.container p {
+  font-size: 2rem;
+}
+
+#ora__intrare {
+  color: aliceblue;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn button {
+  padding: 5px 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  min-width: 75px;
+  border: none;
+  border-radius: 10px;
+}
