@@ -2,6 +2,7 @@ const oraIntrare = document.getElementById("ora__intrare");
 const oraIesire = document.getElementById("ora__iesire");
 const inputBtn = document.getElementById("btn__intrare");
 const outputBtn = document.getElementById("btn__iesire");
+const resetBtn = document.getElementById("btn__reset");
 
 let inputArray = localStorage.getItem("input")
   ? JSON.parse(localStorage.getItem("input"))
@@ -13,27 +14,43 @@ let outputArray = localStorage.getItem("output")
   : [];
 console.log(outputArray);
 
+function register() {
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+  const timeString = `${hours < 10 ? "0" : ""}${hours}:${
+    minutes < 10 ? "0" : ""
+  }${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  return timeString;
+}
+
 // Function to display the current time
 function inputTime() {
-  const now = new Date();
-  const hours1 = now.getHours();
-  const minutes1 = now.getMinutes();
-  const seconds1 = now.getSeconds();
-  const timeString = `${hours1}:${minutes1}:${seconds1}`;
-  inputArray.push(timeString);
+  const time = register();
+  inputArray.push(time);
   localStorage.setItem("input", JSON.stringify(inputArray));
-  location.reload();
+  document.querySelector("#ora__intrare").innerHTML = inputArray[0];
+  updateDisplay();
 }
 
 function outputTime() {
-  const now = new Date();
-  const hours2 = now.getHours();
-  const minutes2 = now.getMinutes();
-  const seconds2 = now.getSeconds();
-  const timeString = `${hours2}:${minutes2}:${seconds2}`;
-  outputArray.push(timeString);
+  const time = register();
+  outputArray.push(time);
   localStorage.setItem("output", JSON.stringify(outputArray));
-  location.reload();
+  document.querySelector("#ora__iesire").innerHTML = outputArray[0];
+  updateDisplay();
+}
+
+function resetTime() {
+  localStorage.removeItem("input");
+  localStorage.removeItem("output");
+  inputArray = [];
+  outputArray = [];
+  document.querySelector("#ora__intrare").innerHTML = "";
+  document.querySelector("#ora__iesire").innerHTML = "";
+  document.querySelector("#time__difference").innerHTML = "";
+  updateDisplay();
 }
 
 // Function to calculate and display the time difference
@@ -65,17 +82,17 @@ function updateDisplay() {
     const minutes = timeDifference.getUTCMinutes();
     const seconds = timeDifference.getUTCSeconds();
 
-    oraIntrare.innerHTML = inputArray[0];
-    oraIesire.innerHTML = outputArray[0];
-    document.querySelector(
-      "#time__difference"
-    ).innerHTML = `${hours}:${minutes}:${seconds}`;
+    document.querySelector("#time__difference").innerHTML = `${
+      hours < 10 ? "0" : ""
+    }${hours}:${minutes < 10 ? "0" : ""}${minutes}:${
+      seconds < 10 ? "0" : ""
+    }${seconds}`;
   }
 }
 
-// Attach the displayTime function to the button click event
 inputBtn.addEventListener("click", inputTime);
 outputBtn.addEventListener("click", outputTime);
+resetBtn.addEventListener("click", resetTime);
 
 document.querySelector("#ora__intrare").innerHTML = inputArray[0];
 document.querySelector("#ora__iesire").innerHTML = outputArray[0];

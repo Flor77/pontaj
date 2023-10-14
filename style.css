@@ -25,8 +25,21 @@ body {
   font-size: 2rem;
 }
 
-#ora__intrare {
+.record {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.record p {
   color: aliceblue;
+  width: 130px;
+  background: rgb(6, 6, 87);
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .btn {
@@ -36,11 +49,21 @@ body {
   gap: 10px;
 }
 
-.btn button {
+button {
   padding: 5px 10px;
   font-size: 1rem;
   font-weight: 600;
   min-width: 75px;
   border: none;
   border-radius: 10px;
+}
+
+p {
+  color: aliceblue;
+  width: 130px;
+  background: rgb(2, 66, 29);
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
