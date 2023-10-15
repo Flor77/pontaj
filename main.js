@@ -3,6 +3,7 @@ const oraIesire = document.getElementById("ora__iesire");
 const inputBtn = document.getElementById("btn__intrare");
 const outputBtn = document.getElementById("btn__iesire");
 const resetBtn = document.getElementById("btn__reset");
+const resetBtnRecords = document.getElementById("btn__resetRecords");
 const recordsList = document.getElementById("recordsList");
 const today = getCurrentDate(); // Get the current date
 
@@ -77,6 +78,11 @@ function resetTime() {
   updateDisplay();
 }
 
+function resetRecords() {
+  localStorage.removeItem("records");
+  recordsList.innerHTML = "";
+}
+
 // Function to calculate and display the time difference relative to 8:30:00 (regular working time)
 function updateDisplay() {
   if (inputArray.length > 0 && outputArray.length > 0) {
@@ -144,6 +150,7 @@ function updateDisplay() {
 inputBtn.addEventListener("click", inputTime);
 outputBtn.addEventListener("click", outputTime);
 resetBtn.addEventListener("click", resetTime);
+resetBtnRecords.addEventListener("click", resetRecords);
 
 document.querySelector("#ora__intrare").innerHTML = inputArray[0];
 document.querySelector("#ora__iesire").innerHTML = outputArray[0];
