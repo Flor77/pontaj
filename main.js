@@ -53,40 +53,44 @@ function resetTime() {
   updateDisplay();
 }
 
-// Function to calculate and display the time difference
+// Function to calculate and display the time difference relative to 8:30:00 (regular working time)
 function updateDisplay() {
   if (inputArray.length > 0 && outputArray.length > 0) {
     const inputTimeParts = inputArray[0].split(":");
     const outputTimeParts = outputArray[0].split(":");
 
-    const inputDate = new Date(
-      0,
-      0,
-      0,
-      inputTimeParts[0],
-      inputTimeParts[1],
-      inputTimeParts[2]
-    );
-    const outputDate = new Date(
-      0,
-      0,
-      0,
-      outputTimeParts[0],
-      outputTimeParts[1],
-      outputTimeParts[2]
-    );
+    const inputHours = parseInt(inputTimeParts[0], 10);
+    const inputMinutes = parseInt(inputTimeParts[1], 10);
+    const inputSeconds = parseInt(inputTimeParts[2], 10);
 
-    const timeDifference = new Date(outputDate - inputDate);
+    const outputHours = parseInt(outputTimeParts[0], 10);
+    const outputMinutes = parseInt(outputTimeParts[1], 10);
+    const outputSeconds = parseInt(outputTimeParts[2], 10);
 
-    const hours = timeDifference.getUTCHours();
-    const minutes = timeDifference.getUTCMinutes();
-    const seconds = timeDifference.getUTCSeconds();
+    const inputMillis =
+      inputHours * 3600000 + inputMinutes * 60000 + inputSeconds * 1000;
+    const outputMillis =
+      outputHours * 3600000 + outputMinutes * 60000 + outputSeconds * 1000;
+    const regularWorkingMillis = 8 * 3600000 + 30 * 60000;
 
-    document.querySelector("#time__difference").innerHTML = `${
-      hours < 10 ? "0" : ""
-    }${hours}:${minutes < 10 ? "0" : ""}${minutes}:${
-      seconds < 10 ? "0" : ""
-    }${seconds}`;
+    const timeDifferenceMillis =
+      outputMillis - inputMillis - regularWorkingMillis;
+
+    const sign = timeDifferenceMillis < 0 ? "-" : "";
+    const absTimeDifferenceMillis = Math.abs(timeDifferenceMillis);
+
+    const hours = Math.floor(absTimeDifferenceMillis / 3600000);
+    const minutes = Math.floor((absTimeDifferenceMillis % 3600000) / 60000);
+    const seconds = Math.floor((absTimeDifferenceMillis % 60000) / 1000);
+
+    const hoursStr = hours.toString().padStart(2, "0");
+    const minutesStr = minutes.toString().padStart(2, "0");
+    const secondsStr = seconds.toString().padStart(2, "0");
+
+    const timeDifferenceString = `${sign}${hoursStr}:${minutesStr}:${secondsStr}`;
+
+    document.querySelector("#time__difference").innerHTML =
+      timeDifferenceString;
   }
 }
 
@@ -96,5 +100,13 @@ resetBtn.addEventListener("click", resetTime);
 
 document.querySelector("#ora__intrare").innerHTML = inputArray[0];
 document.querySelector("#ora__iesire").innerHTML = outputArray[0];
+
+if (inputArray.length === 0) {
+  document.querySelector("#ora__intrare").innerHTML = "";
+}
+
+if (outputArray.length === 0) {
+  document.querySelector("#ora__iesire").innerHTML = "";
+}
 
 updateDisplay();
