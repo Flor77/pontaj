@@ -5,15 +5,10 @@ const outputBtn = document.getElementById("btn__iesire");
 const resetBtn = document.getElementById("btn__reset");
 const resetBtnRecords = document.getElementById("btn__resetRecords");
 const recordsList = document.getElementById("recordsList");
-const today = getCurrentDate(); // Get the current date
 
-let inputArray = localStorage.getItem("input")
-  ? JSON.parse(localStorage.getItem("input"))
-  : [];
+let inputTimeValue = localStorage.getItem("input") || "";
 
-let outputArray = localStorage.getItem("output")
-  ? JSON.parse(localStorage.getItem("output"))
-  : [];
+let outputTimeValue = localStorage.getItem("output") || "";
 
 const records = JSON.parse(localStorage.getItem("records")) || [];
 
@@ -50,19 +45,16 @@ function displayRecords() {
 // Function to display the current time
 function inputTime() {
   const time = register();
-  inputArray.push(time);
-  localStorage.setItem("input", JSON.stringify(inputArray));
-  document.querySelector("#ora__intrare").innerHTML = inputArray[0];
+  localStorage.setItem("input", time);
+  document.querySelector("#ora__intrare").innerHTML = time;
   updateDisplay();
-  outputBtn.disabled = false;
 }
 
 function outputTime() {
-  if (inputArray.length > 0) {
+  if (inputTimeValue) {
     const time = register();
-    outputArray.push(time);
-    localStorage.setItem("output", JSON.stringify(outputArray));
-    document.querySelector("#ora__iesire").innerHTML = outputArray[0];
+    localStorage.setItem("output", time);
+    document.querySelector("#ora__iesire").innerHTML = time;
     updateDisplay();
   }
 }
@@ -70,8 +62,6 @@ function outputTime() {
 function resetTime() {
   localStorage.removeItem("input");
   localStorage.removeItem("output");
-  inputArray = [];
-  outputArray = [];
   document.querySelector("#ora__intrare").innerHTML = "";
   document.querySelector("#ora__iesire").innerHTML = "";
   document.querySelector("#time__difference").innerHTML = "";
@@ -85,9 +75,14 @@ function resetRecords() {
 
 // Function to calculate and display the time difference relative to 8:30:00 (regular working time)
 function updateDisplay() {
-  if (inputArray.length > 0 && outputArray.length > 0) {
-    const inputTimeParts = inputArray[0].split(":");
-    const outputTimeParts = outputArray[0].split(":");
+  inputTimeValue = localStorage.getItem("input") || "";
+  outputTimeValue = localStorage.getItem("output") || "";
+
+  if (inputTimeValue && outputTimeValue) {
+    const today = getCurrentDate();
+
+    const inputTimeParts = inputTimeValue.split(":");
+    const outputTimeParts = outputTimeValue.split(":");
 
     const inputHours = parseInt(inputTimeParts[0], 10);
     const inputMinutes = parseInt(inputTimeParts[1], 10);
@@ -106,6 +101,8 @@ function updateDisplay() {
     const timeDifferenceMillis =
       outputMillis - inputMillis - regularWorkingMillis;
 
+    // Check if the current record exists in the list of records
+
     const sign = timeDifferenceMillis < 0 ? "-" : "";
     const absTimeDifferenceMillis = Math.abs(timeDifferenceMillis);
 
@@ -123,27 +120,20 @@ function updateDisplay() {
       timeDifferenceString;
 
     // Create a record for the current date and time difference
+
     const record = `${today}: ${timeDifferenceString}`;
 
     // Add this record to the beginning of the list
-    records.unshift(record);
+    const existingRecord = records.find((record) => record.startsWith(today));
+    if (!existingRecord) {
+      records.unshift(record);
+    }
 
     // Update the "records" array in local storage
     localStorage.setItem("records", JSON.stringify(records));
 
     // Display the records in the list
     displayRecords();
-  }
-  function displayRecords() {
-    // Clear the list
-    recordsList.innerHTML = "";
-
-    // Display each record in the list
-    records.forEach((record) => {
-      const listItem = document.createElement("li");
-      listItem.textContent = record;
-      recordsList.appendChild(listItem);
-    });
   }
 }
 
@@ -152,16 +142,15 @@ outputBtn.addEventListener("click", outputTime);
 resetBtn.addEventListener("click", resetTime);
 resetBtnRecords.addEventListener("click", resetRecords);
 
-document.querySelector("#ora__intrare").innerHTML = inputArray[0];
-document.querySelector("#ora__iesire").innerHTML = outputArray[0];
+document.querySelector("#ora__intrare").innerHTML = inputTimeValue;
+document.querySelector("#ora__iesire").innerHTML = outputTimeValue;
 
-if (inputArray.length === 0) {
+if (!inputTimeValue) {
   document.querySelector("#ora__intrare").innerHTML = "";
 }
 
-if (outputArray.length === 0) {
+if (!outputTimeValue) {
   document.querySelector("#ora__iesire").innerHTML = "";
 }
 
 updateDisplay();
-displayRecords();
