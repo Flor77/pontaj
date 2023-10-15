@@ -6,6 +6,30 @@ const resetBtn = document.getElementById("btn__reset");
 const resetBtnRecords = document.getElementById("btn__resetRecords");
 const recordsList = document.getElementById("recordsList");
 
+// Function to save data to local storage with a Promise
+function saveToLocalStorage(key, value) {
+  return new Promise((resolve, reject) => {
+    try {
+      localStorage.setItem(key, value);
+      resolve();
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+// Function to get data from local storage with a Promise
+function getFromLocalStorage(key) {
+  return new Promise((resolve, reject) => {
+    try {
+      const value = localStorage.getItem(key);
+      resolve(value);
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
 let inputTimeValue = localStorage.getItem("input") || "";
 
 let outputTimeValue = localStorage.getItem("output") || "";
@@ -43,17 +67,17 @@ function displayRecords() {
 }
 
 // Function to display the current time
-function inputTime() {
+async function inputTime() {
   const time = register();
-  localStorage.setItem("input", time);
+  await saveToLocalStorage("input", time);
   document.querySelector("#ora__intrare").innerHTML = time;
   updateDisplay();
 }
 
-function outputTime() {
+async function outputTime() {
   if (inputTimeValue) {
     const time = register();
-    localStorage.setItem("output", time);
+    await saveToLocalStorage("output", time);
     document.querySelector("#ora__iesire").innerHTML = time;
     updateDisplay();
   }
@@ -73,10 +97,10 @@ function resetRecords() {
   recordsList.innerHTML = "";
 }
 
-// Function to calculate and display the time difference relative to 8:30:00 (regular working time)
-function updateDisplay() {
-  inputTimeValue = localStorage.getItem("input") || "";
-  outputTimeValue = localStorage.getItem("output") || "";
+// Function to calculate and display the time difference relative to 8:30:00 (regular working time) ,update the "records" array and display records
+async function updateDisplay() {
+  inputTimeValue = (await getFromLocalStorage("input")) || "";
+  outputTimeValue = (await getFromLocalStorage("output")) || "";
 
   if (inputTimeValue && outputTimeValue) {
     const today = getCurrentDate();
@@ -130,7 +154,7 @@ function updateDisplay() {
     }
 
     // Update the "records" array in local storage
-    localStorage.setItem("records", JSON.stringify(records));
+    await saveToLocalStorage("records", JSON.stringify(records));
 
     // Display the records in the list
     displayRecords();
@@ -154,3 +178,4 @@ if (!outputTimeValue) {
 }
 
 updateDisplay();
+displayRecords();
