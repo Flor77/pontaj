@@ -57,3 +57,15 @@ button {
   border: none;
   border-radius: 10px;
 }
+
+ul {
+  list-style: none;
+}
+
+ul > li {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 200px;
+  color: aliceblue;
+}

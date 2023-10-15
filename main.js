@@ -3,16 +3,18 @@ const oraIesire = document.getElementById("ora__iesire");
 const inputBtn = document.getElementById("btn__intrare");
 const outputBtn = document.getElementById("btn__iesire");
 const resetBtn = document.getElementById("btn__reset");
+const recordsList = document.getElementById("recordsList");
+const today = getCurrentDate(); // Get the current date
 
 let inputArray = localStorage.getItem("input")
   ? JSON.parse(localStorage.getItem("input"))
   : [];
-console.log(inputArray);
 
 let outputArray = localStorage.getItem("output")
   ? JSON.parse(localStorage.getItem("output"))
   : [];
-console.log(outputArray);
+
+const records = JSON.parse(localStorage.getItem("records")) || [];
 
 function register() {
   const now = new Date();
@@ -25,6 +27,25 @@ function register() {
   return timeString;
 }
 
+function getCurrentDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+  return `${year}-${month < 10 ? "0" : ""}${month}-${
+    day < 10 ? "0" : ""
+  }${day}`;
+}
+
+function displayRecords() {
+  recordsList.innerHTML = "";
+  records.forEach((record) => {
+    const listItem = document.createElement("li");
+    listItem.textContent = record;
+    recordsList.appendChild(listItem);
+  });
+}
+
 // Function to display the current time
 function inputTime() {
   const time = register();
@@ -32,14 +53,17 @@ function inputTime() {
   localStorage.setItem("input", JSON.stringify(inputArray));
   document.querySelector("#ora__intrare").innerHTML = inputArray[0];
   updateDisplay();
+  outputBtn.disabled = false;
 }
 
 function outputTime() {
-  const time = register();
-  outputArray.push(time);
-  localStorage.setItem("output", JSON.stringify(outputArray));
-  document.querySelector("#ora__iesire").innerHTML = outputArray[0];
-  updateDisplay();
+  if (inputArray.length > 0) {
+    const time = register();
+    outputArray.push(time);
+    localStorage.setItem("output", JSON.stringify(outputArray));
+    document.querySelector("#ora__iesire").innerHTML = outputArray[0];
+    updateDisplay();
+  }
 }
 
 function resetTime() {
@@ -91,6 +115,29 @@ function updateDisplay() {
 
     document.querySelector("#time__difference").innerHTML =
       timeDifferenceString;
+
+    // Create a record for the current date and time difference
+    const record = `${today}: ${timeDifferenceString}`;
+
+    // Add this record to the beginning of the list
+    records.unshift(record);
+
+    // Update the "records" array in local storage
+    localStorage.setItem("records", JSON.stringify(records));
+
+    // Display the records in the list
+    displayRecords();
+  }
+  function displayRecords() {
+    // Clear the list
+    recordsList.innerHTML = "";
+
+    // Display each record in the list
+    records.forEach((record) => {
+      const listItem = document.createElement("li");
+      listItem.textContent = record;
+      recordsList.appendChild(listItem);
+    });
   }
 }
 
@@ -110,3 +157,4 @@ if (outputArray.length === 0) {
 }
 
 updateDisplay();
+displayRecords();
