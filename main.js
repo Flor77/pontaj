@@ -68,19 +68,27 @@ function displayRecords() {
 
 // Function to display the current time
 async function inputTime() {
-  const time = register();
-  await saveToLocalStorage("input", time);
-  document.querySelector("#ora__intrare").innerHTML = time;
-  updateDisplay();
+  if (!inputTimeValue) {
+    const time = register();
+    await saveToLocalStorage("input", time);
+    document.querySelector("#ora__intrare").innerHTML = time;
+    updateDisplay();
+  }
 }
 
 async function outputTime() {
-  if (inputTimeValue) {
+  if (inputTimeValue && !outputTimeValue) {
     const time = register();
     await saveToLocalStorage("output", time);
     document.querySelector("#ora__iesire").innerHTML = time;
     updateDisplay();
+    document.querySelector("#ora__intrare").innerHTML = "";
+    document.querySelector("#ora__iesire").innerHTML = "";
+  } else if (!inputTimeValue) {
+    displayErrorMessage("Nu ai intrare!");
+    return;
   }
+  clearErrorMessage();
 }
 
 function resetTime() {
@@ -175,6 +183,18 @@ if (!inputTimeValue) {
 
 if (!outputTimeValue) {
   document.querySelector("#ora__iesire").innerHTML = "";
+}
+
+function displayErrorMessage(message) {
+  const errorMessageElement = document.getElementById("error-message");
+  errorMessageElement.textContent = message;
+  errorMessageElement.style.display = "block"; // Show the error message element
+  setTimeout(clearErrorMessage, 1000);
+}
+
+function clearErrorMessage() {
+  const errorMessageElement = document.getElementById("error-message");
+  errorMessageElement.style.display = "none";
 }
 
 updateDisplay();

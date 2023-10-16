@@ -41,6 +41,12 @@ p {
   align-items: center;
 }
 
+#error-message {
+  width: 200px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .btn {
   display: flex;
   align-items: center;
