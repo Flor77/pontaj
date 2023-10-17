@@ -92,17 +92,31 @@ async function outputTime() {
 }
 
 function resetTime() {
-  localStorage.removeItem("input");
-  localStorage.removeItem("output");
-  document.querySelector("#ora__intrare").innerHTML = "";
-  document.querySelector("#ora__iesire").innerHTML = "";
-  document.querySelector("#time__difference").innerHTML = "";
-  updateDisplay();
+  const confirmation = window.confirm("Chiar vrei sa stergi?");
+  if (confirmation) {
+    localStorage.removeItem("input");
+    localStorage.removeItem("output");
+    document.querySelector("#ora__intrare").innerHTML = "";
+    document.querySelector("#ora__iesire").innerHTML = "";
+    document.querySelector("#time__difference").innerHTML = "";
+    updateDisplay();
+  }
+}
+
+function getCurrentDateFromInputTimeValue() {
+  const inputTimeParts = inputTimeValue.split(":");
+  return `${inputTimeParts[0]}-${
+    inputTimeParts[1]
+  }-${inputTimeParts[2].substring(0, 2)}`;
 }
 
 function resetRecords() {
-  localStorage.removeItem("records");
-  recordsList.innerHTML = "";
+  const confirmation = window.confirm("Chiar vrei sa stergi?");
+
+  if (confirmation) {
+    localStorage.removeItem("records");
+    recordsList.innerHTML = "";
+  }
 }
 
 // Function to calculate and display the time difference relative to 8:30:00 (regular working time) ,update the "records" array and display records
@@ -166,6 +180,7 @@ async function updateDisplay() {
 
     // Display the records in the list
     displayRecords();
+    document.querySelector("#time__difference").innerHTML = "";
   }
 }
 
