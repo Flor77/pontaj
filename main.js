@@ -5,6 +5,7 @@ const outputBtn = document.getElementById("btn__iesire");
 const resetBtn = document.getElementById("btn__reset");
 const resetBtnRecords = document.getElementById("btn__resetRecords");
 const recordsList = document.getElementById("recordsList");
+const exportBtn = document.getElementById("btn__export");
 
 // Function to save data to local storage with a Promise
 function saveToLocalStorage(key, value) {
@@ -68,16 +69,14 @@ function displayRecords() {
 
 // Function to display the current time
 async function inputTime() {
-  if (!inputTimeValue) {
-    const time = register();
-    await saveToLocalStorage("input", time);
-    document.querySelector("#ora__intrare").innerHTML = time;
-    updateDisplay();
-  }
+  const time = register();
+  await saveToLocalStorage("input", time);
+  document.querySelector("#ora__intrare").innerHTML = time;
+  updateDisplay();
 }
 
 async function outputTime() {
-  if (inputTimeValue && !outputTimeValue) {
+  if (inputTimeValue) {
     const time = register();
     await saveToLocalStorage("output", time);
     document.querySelector("#ora__iesire").innerHTML = time;
@@ -149,7 +148,7 @@ async function updateDisplay() {
 
     // Check if the current record exists in the list of records
 
-    const sign = timeDifferenceMillis < 0 ? "-" : "";
+    const sign = timeDifferenceMillis < 0 ? "-" : "+";
     const absTimeDifferenceMillis = Math.abs(timeDifferenceMillis);
 
     const hours = Math.floor(absTimeDifferenceMillis / 3600000);
@@ -210,6 +209,44 @@ function displayErrorMessage(message) {
 function clearErrorMessage() {
   const errorMessageElement = document.getElementById("error-message");
   errorMessageElement.style.display = "none";
+}
+
+exportBtn.addEventListener("click", () => {
+  exportRecordsToCSV();
+});
+
+function exportRecordsToCSV() {
+  // Ensure there are records to export
+  if (records.length === 0) {
+    alert("No records to export.");
+    return;
+  }
+
+  // Create a CSV content
+  let csvContent = "Time Difference\n"; // Header
+
+  records.forEach((record) => {
+    csvContent += record + "\n";
+  });
+
+  // Create a Blob containing the CSV data
+  const blob = new Blob([csvContent], { type: "text/csv" });
+
+  // Create a URL for the Blob
+  const url = URL.createObjectURL(blob);
+
+  // Create a download link
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "records.csv"; // You can customize the filename
+  document.body.appendChild(a);
+
+  // Trigger the click event on the link to initiate the download
+  a.click();
+
+  // Clean up
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 updateDisplay();
