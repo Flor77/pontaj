@@ -249,5 +249,50 @@ function exportRecordsToCSV() {
   URL.revokeObjectURL(url);
 }
 
+function calculateTotalTimeDifference() {
+  let totalDifferenceMillis = 0;
+
+  records.forEach((record) => {
+    const timeDifference = record.split(":")[1].trim();
+
+    // Check if timeDifference is in the expected format
+    if (/^[+\-]?\s?\d{2}:\d{2}:\d{2}$/.test(timeDifference)) {
+      const [sign, hours, minutes, seconds] = timeDifference.split(/:|-/);
+
+      let hoursInMillis = parseInt(hours, 10) * 3600000;
+      let minutesInMillis = 0;
+      let secondsInMillis = 0;
+
+      if (minutes) {
+        minutesInMillis = parseInt(minutes, 10) * 60000;
+      }
+      if (seconds) {
+        secondsInMillis = parseInt(seconds, 10) * 1000;
+      }
+
+      const recordMillis =
+        (sign === "+" ? 1 : -1) *
+        (hoursInMillis + minutesInMillis + secondsInMillis);
+      totalDifferenceMillis += recordMillis;
+    } else {
+      // Handle the case where the timeDifference is not in the expected format
+      console.log("Invalid time difference format: " + timeDifference);
+    }
+  });
+  const sign = totalDifferenceMillis >= 0 ? "+" : "-";
+  totalDifferenceMillis = Math.abs(totalDifferenceMillis);
+
+  const totalHours = Math.floor(totalDifferenceMillis / 3600000);
+  const totalMinutes = Math.floor((totalDifferenceMillis % 3600000) / 60000);
+  const totalSeconds = Math.floor((totalDifferenceMillis % 60000) / 1000);
+
+  const totalTimeDifference = `${sign}${totalHours}:${totalMinutes}:${totalSeconds}`;
+
+  document.getElementById(
+    "total-time-difference"
+  ).textContent = `${totalTimeDifference}`;
+}
+
 updateDisplay();
 displayRecords();
+calculateTotalTimeDifference();
