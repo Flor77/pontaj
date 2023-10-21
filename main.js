@@ -179,6 +179,7 @@ async function updateDisplay() {
 
     // Display the records in the list
     displayRecords();
+
     document.querySelector("#time__difference").innerHTML = "";
   }
 }
@@ -253,32 +254,19 @@ function calculateTotalTimeDifference() {
   let totalDifferenceMillis = 0;
 
   records.forEach((record) => {
-    const timeDifference = record.split(":")[1].trim();
+    const timeDifference = record.split(": ")[1].trim();
+    const [sign, hours, minutes, seconds] = timeDifference.split(/:|-/);
 
-    // Check if timeDifference is in the expected format
-    if (/^[+\-]?\s?\d{2}:\d{2}:\d{2}$/.test(timeDifference)) {
-      const [sign, hours, minutes, seconds] = timeDifference.split(/:|-/);
+    const hoursInMillis = parseInt(hours, 10) * 3600000;
+    const minutesInMillis = parseInt(minutes, 10) * 60000;
+    const secondsInMillis = parseInt(seconds, 10) * 1000;
 
-      let hoursInMillis = parseInt(hours, 10) * 3600000;
-      let minutesInMillis = 0;
-      let secondsInMillis = 0;
-
-      if (minutes) {
-        minutesInMillis = parseInt(minutes, 10) * 60000;
-      }
-      if (seconds) {
-        secondsInMillis = parseInt(seconds, 10) * 1000;
-      }
-
-      const recordMillis =
-        (sign === "+" ? 1 : -1) *
-        (hoursInMillis + minutesInMillis + secondsInMillis);
-      totalDifferenceMillis += recordMillis;
-    } else {
-      // Handle the case where the timeDifference is not in the expected format
-      console.log("Invalid time difference format: " + timeDifference);
-    }
+    const recordMillis =
+      (sign === "+" ? 1 : -1) *
+      (hoursInMillis + minutesInMillis + secondsInMillis);
+    totalDifferenceMillis += recordMillis;
   });
+
   const sign = totalDifferenceMillis >= 0 ? "+" : "-";
   totalDifferenceMillis = Math.abs(totalDifferenceMillis);
 
