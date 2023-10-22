@@ -6,6 +6,7 @@ const resetBtn = document.getElementById("btn__reset");
 const resetBtnRecords = document.getElementById("btn__resetRecords");
 const recordsList = document.getElementById("recordsList");
 const exportBtn = document.getElementById("btn__export");
+const resetBtnLastRecords = document.getElementById("btn__resetLastRecords");
 
 // Function to save data to local storage with a Promise
 function saveToLocalStorage(key, value) {
@@ -162,7 +163,7 @@ async function updateDisplay() {
     const timeDifferenceString = `${sign}${hoursStr}:${minutesStr}:${secondsStr}`;
 
     document.querySelector("#time__difference").innerHTML =
-      timeDifferenceString;
+      formatTimeDifference(timeDifferenceString);
 
     // Create a record for the current date and time difference
 
@@ -184,10 +185,20 @@ async function updateDisplay() {
   }
 }
 
+function formatTimeDifference(record) {
+  const parts = record.split(":");
+  const dateString = parts[0];
+  const timeDifference = parts[1].trim();
+
+  const formattedDate = new Date(dateString).toLocaleDateString();
+  return `${formattedDate}: ${timeDifference}`;
+}
+
 inputBtn.addEventListener("click", inputTime);
 outputBtn.addEventListener("click", outputTime);
 resetBtn.addEventListener("click", resetTime);
 resetBtnRecords.addEventListener("click", resetRecords);
+resetBtnLastRecords.addEventListener("click", deleteLastRecord);
 
 document.querySelector("#ora__intrare").innerHTML = inputTimeValue;
 document.querySelector("#ora__iesire").innerHTML = outputTimeValue;
@@ -252,34 +263,65 @@ function exportRecordsToCSV() {
 
 function calculateTotalTimeDifference() {
   let totalDifferenceMillis = 0;
+  let totalSign = "+"; // Initialize the total sign as positive
 
   records.forEach((record) => {
     const timeDifference = record.split(": ")[1].trim();
-    const [sign, hours, minutes, seconds] = timeDifference.split(/:|-/);
+    const [sign, hours, minutes, seconds] = timeDifference.split(/:|-|[+ ]/);
 
     const hoursInMillis = parseInt(hours, 10) * 3600000;
     const minutesInMillis = parseInt(minutes, 10) * 60000;
     const secondsInMillis = parseInt(seconds, 10) * 1000;
 
+    let signMultiplier = 1;
+    if (sign === "-") {
+      signMultiplier = -1;
+    }
+
+    // Update the total sign based on the individual sign
+    if (signMultiplier === -1) {
+      totalSign = "-";
+    }
+
     const recordMillis =
-      (sign === "+" ? 1 : -1) *
-      (hoursInMillis + minutesInMillis + secondsInMillis);
+      signMultiplier * (hoursInMillis + minutesInMillis + secondsInMillis);
     totalDifferenceMillis += recordMillis;
   });
 
-  const sign = totalDifferenceMillis >= 0 ? "+" : "-";
+  totalSign = totalDifferenceMillis >= 0 ? "+" : "-";
   totalDifferenceMillis = Math.abs(totalDifferenceMillis);
 
   const totalHours = Math.floor(totalDifferenceMillis / 3600000);
   const totalMinutes = Math.floor((totalDifferenceMillis % 3600000) / 60000);
   const totalSeconds = Math.floor((totalDifferenceMillis % 60000) / 1000);
 
-  const totalTimeDifference = `${sign}${totalHours}:${totalMinutes}:${totalSeconds}`;
+  const totalTimeDifference = `${totalSign}${totalHours}:${totalMinutes}:${totalSeconds}`;
 
-  document.getElementById(
-    "total-time-difference"
-  ).textContent = `${totalTimeDifference}`;
+  document.getElementById("total-time-difference").textContent =
+    totalTimeDifference;
 }
+
+function deleteLastRecord() {
+  const records = JSON.parse(localStorage.getItem("records")) || [];
+
+  if (records.length > 0) {
+    const indexToDelete = records.length - 1;
+
+    records.splice(indexToDelete, 1);
+
+    localStorage.setItem("records", JSON.stringify(records));
+  }
+}
+
+// function deleteRecordByIndex(indexToDelete) {
+//   const records = JSON.parse(localStorage.getItem("records")) || [];
+
+//   if (indexToDelete >= 0 && indexToDelete < records.length) {
+//     records.splice(indexToDelete, 1);
+
+//     localStorage.setItem("records", JSON.stringify(records));
+//   }
+// }
 
 updateDisplay();
 displayRecords();
