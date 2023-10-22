@@ -342,7 +342,7 @@ function deleteLastRecord() {
 }
 
 function displayRecordsList() {
-  recordsList.style.display = "block"; // Show the records list
+  recordsList.style.display = "block";
 }
 
 function toggleRecordsList() {
