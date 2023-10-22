@@ -7,6 +7,7 @@ const resetBtnRecords = document.getElementById("btn__resetRecords");
 const recordsList = document.getElementById("recordsList");
 const exportBtn = document.getElementById("btn__export");
 const resetBtnLastRecords = document.getElementById("btn__resetLastRecords");
+const displayBtnRecords = document.getElementById("btn__displayRecords");
 
 // Function to save data to local storage with a Promise
 function saveToLocalStorage(key, value) {
@@ -35,6 +36,18 @@ function getFromLocalStorage(key) {
 let inputTimeValue = localStorage.getItem("input") || "";
 
 let outputTimeValue = localStorage.getItem("output") || "";
+
+// localStorage.removeItem("records"); // Remove the existing records
+
+// // Manually add records in the correct format
+// const manualRecords = [
+//   "2023-10-20: +00:45:00",
+//   "2023-10-21: -01:15:30",
+//   "2023-10-19: 00:15:30",
+//   // Add more records as needed
+// ];
+
+// localStorage.setItem("records", JSON.stringify(manualRecords));
 
 const records = JSON.parse(localStorage.getItem("records")) || [];
 
@@ -70,10 +83,15 @@ function displayRecords() {
 
 // Function to display the current time
 async function inputTime() {
-  const time = register();
-  await saveToLocalStorage("input", time);
-  document.querySelector("#ora__intrare").innerHTML = time;
-  updateDisplay();
+  if (!inputTimeValue) {
+    const time = register();
+    await saveToLocalStorage("input", time);
+    document.querySelector("#ora__intrare").innerHTML = time;
+    updateDisplay();
+  } else if (inputTimeValue) {
+    displayErrorMessage("Ai intrare!");
+    return;
+  }
 }
 
 async function outputTime() {
@@ -101,6 +119,14 @@ function resetTime() {
     document.querySelector("#time__difference").innerHTML = "";
     updateDisplay();
   }
+}
+
+function resetInputAndOutput() {
+  localStorage.removeItem("input");
+  localStorage.removeItem("output");
+  document.querySelector("#ora__intrare").innerHTML = "";
+  document.querySelector("#ora__iesire").innerHTML = "";
+  updateDisplay();
 }
 
 function getCurrentDateFromInputTimeValue() {
@@ -178,8 +204,8 @@ async function updateDisplay() {
     // Update the "records" array in local storage
     await saveToLocalStorage("records", JSON.stringify(records));
 
-    // Display the records in the list
-    displayRecords();
+    calculateTotalTimeDifference();
+    resetInputAndOutput();
 
     document.querySelector("#time__difference").innerHTML = "";
   }
@@ -199,6 +225,7 @@ outputBtn.addEventListener("click", outputTime);
 resetBtn.addEventListener("click", resetTime);
 resetBtnRecords.addEventListener("click", resetRecords);
 resetBtnLastRecords.addEventListener("click", deleteLastRecord);
+displayBtnRecords.addEventListener("click", toggleRecordsList);
 
 document.querySelector("#ora__intrare").innerHTML = inputTimeValue;
 document.querySelector("#ora__iesire").innerHTML = outputTimeValue;
@@ -292,7 +319,11 @@ function calculateTotalTimeDifference() {
   const totalMinutes = Math.floor((totalDifferenceMillis % 3600000) / 60000);
   const totalSeconds = Math.floor((totalDifferenceMillis % 60000) / 1000);
 
-  const totalTimeDifference = `${sign}${totalHours}:${totalMinutes}:${totalSeconds}`;
+  const hoursStr = totalHours.toString().padStart(2, "0");
+  const minutesStr = totalMinutes.toString().padStart(2, "0");
+  const secondsStr = totalSeconds.toString().padStart(2, "0");
+
+  const totalTimeDifference = `${sign}${hoursStr}:${minutesStr}:${secondsStr}`;
 
   document.getElementById("total-time-difference").textContent =
     totalTimeDifference;
@@ -302,11 +333,23 @@ function deleteLastRecord() {
   const records = JSON.parse(localStorage.getItem("records")) || [];
 
   if (records.length > 0) {
-    const indexToDelete = records.length - 1;
+    const indexToDelete = records[0];
 
     records.splice(indexToDelete, 1);
 
     localStorage.setItem("records", JSON.stringify(records));
+  }
+}
+
+function displayRecordsList() {
+  recordsList.style.display = "block"; // Show the records list
+}
+
+function toggleRecordsList() {
+  if (recordsList.style.display === "none") {
+    recordsList.style.display = "block"; // Show the records list
+  } else {
+    recordsList.style.display = "none"; // Hide the records list
   }
 }
 
