@@ -263,39 +263,36 @@ function exportRecordsToCSV() {
 
 function calculateTotalTimeDifference() {
   let totalDifferenceMillis = 0;
-  let totalSign = "+"; // Initialize the total sign as positive
 
   records.forEach((record) => {
     const timeDifference = record.split(": ")[1].trim();
-    const [sign, hours, minutes, seconds] = timeDifference.split(/:|-|[+ ]/);
+    const [sign, hours, minutes, seconds] = timeDifference.split(/:|-|\+| /);
+
+    let signMultiplier = -1;
+
+    if (sign === "-") {
+      signMultiplier = 1;
+    } else if (sign === "+" || sign === " ") {
+      signMultiplier = -1;
+    }
 
     const hoursInMillis = parseInt(hours, 10) * 3600000;
     const minutesInMillis = parseInt(minutes, 10) * 60000;
     const secondsInMillis = parseInt(seconds, 10) * 1000;
-
-    let signMultiplier = 1;
-    if (sign === "-") {
-      signMultiplier = -1;
-    }
-
-    // Update the total sign based on the individual sign
-    if (signMultiplier === -1) {
-      totalSign = "-";
-    }
 
     const recordMillis =
       signMultiplier * (hoursInMillis + minutesInMillis + secondsInMillis);
     totalDifferenceMillis += recordMillis;
   });
 
-  totalSign = totalDifferenceMillis >= 0 ? "+" : "-";
+  const sign = totalDifferenceMillis >= 0 ? "+" : "-";
   totalDifferenceMillis = Math.abs(totalDifferenceMillis);
 
   const totalHours = Math.floor(totalDifferenceMillis / 3600000);
   const totalMinutes = Math.floor((totalDifferenceMillis % 3600000) / 60000);
   const totalSeconds = Math.floor((totalDifferenceMillis % 60000) / 1000);
 
-  const totalTimeDifference = `${totalSign}${totalHours}:${totalMinutes}:${totalSeconds}`;
+  const totalTimeDifference = `${sign}${totalHours}:${totalMinutes}:${totalSeconds}`;
 
   document.getElementById("total-time-difference").textContent =
     totalTimeDifference;
