@@ -37,18 +37,6 @@ let inputTimeValue = localStorage.getItem("input") || "";
 
 let outputTimeValue = localStorage.getItem("output") || "";
 
-// localStorage.removeItem("records"); // Remove the existing records
-
-// // Manually add records in the correct format
-// const manualRecords = [
-//   "2023-10-20: +00:45:00",
-//   "2023-10-21: -01:15:30",
-//   "2023-10-19: 00:15:30",
-//   // Add more records as needed
-// ];
-
-// localStorage.setItem("records", JSON.stringify(manualRecords));
-
 const records = JSON.parse(localStorage.getItem("records")) || [];
 
 function register() {
@@ -99,9 +87,10 @@ async function outputTime() {
     const time = register();
     await saveToLocalStorage("output", time);
     document.querySelector("#ora__iesire").innerHTML = time;
-    updateDisplay();
     document.querySelector("#ora__intrare").innerHTML = "";
     document.querySelector("#ora__iesire").innerHTML = "";
+    calculateTotalTimeDifference();
+    updateDisplay();
   } else if (!inputTimeValue) {
     displayErrorMessage("Nu ai intrare!");
     return;
@@ -145,7 +134,7 @@ function resetRecords() {
   }
 }
 
-// Function to calculate and display the time difference relative to 8:30:00 (regular working time) ,update the "records" array and display records
+//Calculate and display the time difference relative to 8:30:00 (regular working time) ,update the "records" array and display records
 async function updateDisplay() {
   inputTimeValue = (await getFromLocalStorage("input")) || "";
   outputTimeValue = (await getFromLocalStorage("output")) || "";
@@ -293,26 +282,27 @@ function calculateTotalTimeDifference() {
 
   records.forEach((record) => {
     const timeDifference = record.split(": ")[1].trim();
-    const [sign, hours, minutes, seconds] = timeDifference.split(/:|-|\+| /);
+    const matches = timeDifference.match(/^([-+]?)((\d+):)?((\d+):)?(\d+)$/);
 
-    let signMultiplier = -1;
+    if (matches) {
+      const timeDifferenceSign = matches[1] === "-" ? "-" : "+";
+      const hours = parseInt(matches[3]) || 0;
+      const minutes = parseInt(matches[5]) || 0;
+      const seconds = parseInt(matches[6]) || 0;
 
-    if (sign === "-") {
-      signMultiplier = 1;
-    } else if (sign === "+" || sign === " ") {
-      signMultiplier = -1;
+      const signMultiplier = timeDifferenceSign === "-" ? -1 : 1;
+
+      const hoursInMillis = hours * 3600000;
+      const minutesInMillis = minutes * 60000;
+      const secondsInMillis = seconds * 1000;
+
+      const recordMillis =
+        signMultiplier * (hoursInMillis + minutesInMillis + secondsInMillis);
+      totalDifferenceMillis += recordMillis;
     }
-
-    const hoursInMillis = parseInt(hours, 10) * 3600000;
-    const minutesInMillis = parseInt(minutes, 10) * 60000;
-    const secondsInMillis = parseInt(seconds, 10) * 1000;
-
-    const recordMillis =
-      signMultiplier * (hoursInMillis + minutesInMillis + secondsInMillis);
-    totalDifferenceMillis += recordMillis;
   });
 
-  const sign = totalDifferenceMillis >= 0 ? "+" : "-";
+  const totalSign = totalDifferenceMillis >= 0 ? "+" : "-";
   totalDifferenceMillis = Math.abs(totalDifferenceMillis);
 
   const totalHours = Math.floor(totalDifferenceMillis / 3600000);
@@ -323,26 +313,29 @@ function calculateTotalTimeDifference() {
   const minutesStr = totalMinutes.toString().padStart(2, "0");
   const secondsStr = totalSeconds.toString().padStart(2, "0");
 
-  const totalTimeDifference = `${sign}${hoursStr}:${minutesStr}:${secondsStr}`;
+  const totalTimeDifference = `${totalSign}${hoursStr}:${minutesStr}:${secondsStr}`;
 
   document.getElementById("total-time-difference").textContent =
     totalTimeDifference;
 }
 
 function deleteLastRecord() {
+  const confirmation = window.confirm("Chiar vrei sa stergi?");
   const records = JSON.parse(localStorage.getItem("records")) || [];
 
-  if (records.length > 0) {
-    const indexToDelete = records[0];
-
-    records.splice(indexToDelete, 1);
-
+  if (confirmation && records.length > 0) {
+    records.shift();
     localStorage.setItem("records", JSON.stringify(records));
+
+    displayRecords();
+    calculateTotalTimeDifference();
+    updateDisplay();
   }
 }
 
 function displayRecordsList() {
   recordsList.style.display = "block"; // Show the records list
+  displayRecords();
 }
 
 function toggleRecordsList() {
@@ -352,16 +345,6 @@ function toggleRecordsList() {
     recordsList.style.display = "none"; // Hide the records list
   }
 }
-
-// function deleteRecordByIndex(indexToDelete) {
-//   const records = JSON.parse(localStorage.getItem("records")) || [];
-
-//   if (indexToDelete >= 0 && indexToDelete < records.length) {
-//     records.splice(indexToDelete, 1);
-
-//     localStorage.setItem("records", JSON.stringify(records));
-//   }
-// }
 
 updateDisplay();
 displayRecords();
