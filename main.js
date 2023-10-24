@@ -138,7 +138,6 @@ function resetRecords() {
 async function updateDisplay() {
   inputTimeValue = (await getFromLocalStorage("input")) || "";
   outputTimeValue = (await getFromLocalStorage("output")) || "";
-
   if (inputTimeValue && outputTimeValue) {
     const today = getCurrentDate();
 
@@ -182,7 +181,7 @@ async function updateDisplay() {
 
     // Create a record for the current date and time difference
 
-    const record = `${today}: ${timeDifferenceString}`;
+    const record = `${today}: ${timeDifferenceString}: ${inputTimeValue}: ${outputTimeValue}`;
 
     // Add this record to the beginning of the list
     const existingRecord = records.find((record) => record.startsWith(today));
@@ -215,6 +214,7 @@ resetBtn.addEventListener("click", resetTime);
 resetBtnRecords.addEventListener("click", resetRecords);
 resetBtnLastRecords.addEventListener("click", deleteLastRecord);
 displayBtnRecords.addEventListener("click", toggleRecordsList);
+// displayBtnRecords.addEventListener("click", displayRecordsList);
 
 document.querySelector("#ora__intrare").innerHTML = inputTimeValue;
 document.querySelector("#ora__iesire").innerHTML = outputTimeValue;
@@ -326,10 +326,10 @@ function deleteLastRecord() {
   if (confirmation && records.length > 0) {
     records.shift();
     localStorage.setItem("records", JSON.stringify(records));
-
-    displayRecords();
     calculateTotalTimeDifference();
+    displayRecords();
     updateDisplay();
+    location.reload();
   }
 }
 
@@ -341,6 +341,7 @@ function displayRecordsList() {
 function toggleRecordsList() {
   if (recordsList.style.display === "none") {
     recordsList.style.display = "block"; // Show the records list
+    displayRecords();
   } else {
     recordsList.style.display = "none"; // Hide the records list
   }
