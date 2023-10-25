@@ -72,6 +72,14 @@ function displayRecords() {
 // Function to display the current time
 async function inputTime() {
   if (!inputTimeValue) {
+    const now = new Date();
+    const today = getCurrentDate();
+    const lastRecord = records.find((record) => record.startsWith(today));
+    if (lastRecord) {
+      displayErrorMessage("Te ai inregistrat azi !");
+      return;
+    }
+
     const time = register();
     await saveToLocalStorage("input", time);
     document.querySelector("#ora__intrare").innerHTML = time;
@@ -86,9 +94,6 @@ async function outputTime() {
   if (inputTimeValue) {
     const time = register();
     await saveToLocalStorage("output", time);
-    document.querySelector("#ora__iesire").innerHTML = time;
-    document.querySelector("#ora__intrare").innerHTML = "";
-    document.querySelector("#ora__iesire").innerHTML = "";
     calculateTotalTimeDifference();
     updateDisplay();
   } else if (!inputTimeValue) {
@@ -116,13 +121,6 @@ function resetInputAndOutput() {
   document.querySelector("#ora__intrare").innerHTML = "";
   document.querySelector("#ora__iesire").innerHTML = "";
   updateDisplay();
-}
-
-function getCurrentDateFromInputTimeValue() {
-  const inputTimeParts = inputTimeValue.split(":");
-  return `${inputTimeParts[0]}-${
-    inputTimeParts[1]
-  }-${inputTimeParts[2].substring(0, 2)}`;
 }
 
 function resetRecords() {
