@@ -44,10 +44,16 @@ p {
   align-items: center;
 }
 
-#error-message {
+.error-container {
+  display: flex;
+  justify-content: center;
   width: 200px;
+  height: 20px;
+}
+
+.error-container #error-message {
+  align-self: center;
   font-size: 0.9rem;
-  text-align: center;
 }
 
 button {
