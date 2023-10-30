@@ -91,16 +91,19 @@ async function inputTime() {
 }
 
 async function outputTime() {
-  if (inputTimeValue) {
-    const time = register();
-    await saveToLocalStorage("output", time);
-    calculateTotalTimeDifference();
-    updateDisplay();
-  } else if (!inputTimeValue) {
-    displayErrorMessage("Nu ai intrare!");
-    return;
+  const confirmation = window.confirm("Chiar vrei sa iesi?");
+  if (confirmation) {
+    if (inputTimeValue) {
+      const time = register();
+      await saveToLocalStorage("output", time);
+      calculateTotalTimeDifference();
+      updateDisplay();
+    } else if (!inputTimeValue) {
+      displayErrorMessage("Nu ai intrare!");
+      return;
+    }
+    clearErrorMessage();
   }
-  clearErrorMessage();
 }
 
 function resetTime() {
