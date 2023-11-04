@@ -41,13 +41,18 @@ const records = JSON.parse(localStorage.getItem("records")) || [];
 
 function register() {
   const now = new Date();
+  const adjustedTime = "07:30:00";
   const hours = now.getHours();
   const minutes = now.getMinutes();
   const seconds = now.getSeconds();
   const timeString = `${hours < 10 ? "0" : ""}${hours}:${
     minutes < 10 ? "0" : ""
   }${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  return timeString;
+  if (timeString >= "06:00:00" && timeString <= "07:30:00") {
+    return adjustedTime;
+  } else {
+    return timeString;
+  }
 }
 
 function getCurrentDate() {
