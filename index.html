@@ -1,43 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="icon" href="./time2.png" />
-    <title>Pontaj</title>
-  </head>
-  <body>
-    <div class="container">
-      <div class="record">
-        <h3 style="color: rgb(168, 185, 199)">Ora intrare</h3>
-        <p id="ora__intrare"></p>
-      </div>
-      <p id="ora__iesire"></p>
-      <div class="error-container">
-        <p id="error-message" style="color: red"></p>
-      </div>
 
-      <div class="btn">
-        <button id="btn__intrare">Intrare</button>
-        <button id="btn__iesire">Iesire</button>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="icon" href="./time2.png" />
+  <title>Pontaj</title>
+</head>
 
-      <p id="time__difference"></p>
-      <ul id="recordsList" style="display: none"></ul>
-      <p id="total-time-difference"></p>
-      <button
-        id="btn__displayRecords"
-        style="
+<body>
+  <div class="container">
+    <div class="record">
+      <h3 style="color: rgb(168, 185, 199)">Ora intrare</h3>
+      <p id="ora__intrare"></p>
+    </div>
+    <p id="ora__iesire"></p>
+    <div class="error-container">
+      <p id="error-message" style="color: red"></p>
+    </div>
+
+    <div class="btn">
+      <button id="btn__intrare">Intrare</button>
+      <button id="btn__iesire">Iesire</button>
+    </div>
+
+    <p id="time__difference"></p>
+    <ul id="recordsList" style="display: none"></ul>
+    <p id="total-time-difference"></p>
+    <button id="btn__displayRecords" style="
           background-color: #116ec5;
           color: aliceblue;
           border: 1px solid aliceblue;
-        "
-      >
-        Afiseaza Inregistrari
-      </button>
-      <button
+        ">
+      Afiseaza Inregistrari
+    </button>
+    <!-- <button
       id="btn__reset"
       style="
         background-color: #e4362a;
@@ -46,38 +45,30 @@
       "
     >
       Reset Intrari
+    </button> -->
+    <button id="btn__resetLastRecords" style="
+          background-color: #e4362a;
+          color: aliceblue;
+          border: 1px solid aliceblue;
+        ">
+      Reset Ultima Inregistrare
     </button>
-      <button
-        id="btn__resetLastRecords"
-        style="
+    <button id="btn__resetRecords" style="
           background-color: #e4362a;
           color: aliceblue;
           border: 1px solid aliceblue;
-        "
-      >
-        Reset Ultima Inregistrare
-      </button>
-      <button
-        id="btn__resetRecords"
-        style="
-          background-color: #e4362a;
-          color: aliceblue;
-          border: 1px solid aliceblue;
-        "
-      >
-        Reset Inregistrari
-      </button>
-      <button
-        id="btn__export"
-        style="
+        ">
+      Reset Inregistrari
+    </button>
+    <button id="btn__export" style="
           background-color: #1d6f42;
           color: aliceblue;
           border: 1px solid aliceblue;
-        "
-      >
-        Export Inregistrari
-      </button>
-    </div>
-  </body>
-  <script src="main.js"></script>
+        ">
+      Export Inregistrari
+    </button>
+  </div>
+</body>
+<script src="main.js"></script>
+
 </html>

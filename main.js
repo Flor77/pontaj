@@ -2,7 +2,7 @@ const oraIntrare = document.getElementById("ora__intrare");
 const oraIesire = document.getElementById("ora__iesire");
 const inputBtn = document.getElementById("btn__intrare");
 const outputBtn = document.getElementById("btn__iesire");
-const resetBtn = document.getElementById("btn__reset");
+// const resetBtn = document.getElementById("btn__reset");
 const resetBtnRecords = document.getElementById("btn__resetRecords");
 const recordsList = document.getElementById("recordsList");
 const exportBtn = document.getElementById("btn__export");
@@ -137,6 +137,8 @@ function resetRecords() {
   if (confirmation) {
     localStorage.removeItem("records");
     recordsList.innerHTML = "";
+    updateDisplay();
+    location.reload();
   }
 }
 
@@ -216,7 +218,7 @@ function formatTimeDifference(record) {
 
 inputBtn.addEventListener("click", inputTime);
 outputBtn.addEventListener("click", outputTime);
-resetBtn.addEventListener("click", resetTime);
+// resetBtn.addEventListener("click", resetTime);
 resetBtnRecords.addEventListener("click", resetRecords);
 resetBtnLastRecords.addEventListener("click", deleteLastRecord);
 displayBtnRecords.addEventListener("click", toggleRecordsList);
@@ -321,8 +323,15 @@ function calculateTotalTimeDifference() {
 
   const totalTimeDifference = `${totalSign}${hoursStr}:${minutesStr}:${secondsStr}`;
 
-  document.getElementById("total-time-difference").textContent =
-    totalTimeDifference;
+  const totalTimeDifferenceElement = document.getElementById(
+    "total-time-difference"
+  );
+
+  // Apply color based on the sign of the total time difference directly
+  totalTimeDifferenceElement.style.color =
+    totalSign === "+" ? "#40be25" : "red";
+
+  totalTimeDifferenceElement.textContent = totalTimeDifference;
 }
 
 function deleteLastRecord() {
