@@ -8,6 +8,8 @@ const recordsList = document.getElementById("recordsList");
 const exportBtn = document.getElementById("btn__export");
 const resetBtnLastRecords = document.getElementById("btn__resetLastRecords");
 const displayBtnRecords = document.getElementById("btn__displayRecords");
+const manualInputField = document.getElementById("manualInput");
+const manualIntrareBtn = document.getElementById("btn__manualIntrare");
 
 // Function to save data to local storage with a Promise
 function saveToLocalStorage(key, value) {
@@ -75,7 +77,7 @@ function displayRecords() {
 }
 
 // Function to display the current time
-async function inputTime() {
+async function inputTime(isManual) {
   if (!inputTimeValue) {
     const now = new Date();
     const today = getCurrentDate();
@@ -84,8 +86,22 @@ async function inputTime() {
       displayErrorMessage("Te ai inregistrat azi !");
       return;
     }
+    let time;
+    if (isManual) {
+      inputBtn.disabled = true;
+      manualInputField.style.display = "inline";
+      manualInputField.style.outline = "none";
+      manualInputField.style.padding = "5px";
+      manualInputField.focus();
 
-    const time = register();
+      time = await handleManualInput();
+      manualInputField.value = "";
+      manualInputField.style.display = "none";
+      inputBtn.disabled = false;
+    } else {
+      time = register();
+    }
+
     await saveToLocalStorage("input", time);
     document.querySelector("#ora__intrare").innerHTML = time;
     updateDisplay();
@@ -216,7 +232,8 @@ function formatTimeDifference(record) {
   return `${formattedDate}: ${timeDifference}`;
 }
 
-inputBtn.addEventListener("click", inputTime);
+inputBtn.addEventListener("click", () => inputTime(false));
+manualIntrareBtn.addEventListener("click", () => inputTime(true));
 outputBtn.addEventListener("click", outputTime);
 // resetBtn.addEventListener("click", resetTime);
 resetBtnRecords.addEventListener("click", resetRecords);
@@ -360,6 +377,28 @@ function toggleRecordsList() {
   } else {
     recordsList.style.display = "none"; // Hide the records list
   }
+}
+
+function isValidTimeFormat(timeString) {
+  const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
+  return timeRegex.test(timeString);
+}
+
+function handleManualInput() {
+  return new Promise((resolve, reject) => {
+    manualInputField.addEventListener("blur", function onBlur() {
+      // Remove the blur event listener
+      manualInputField.removeEventListener("blur", onBlur);
+
+      const manualInput = manualInputField.value;
+      if (!isValidTimeFormat(manualInput)) {
+        displayErrorMessage("Formatul orei este invalid!");
+        reject(new Error("Invalid time format"));
+      } else {
+        resolve(manualInput);
+      }
+    });
+  });
 }
 
 updateDisplay();
