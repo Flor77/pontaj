@@ -111,11 +111,27 @@ async function inputTime(isManual) {
   }
 }
 
-async function outputTime() {
+async function outputTime(isManual) {
   const confirmation = window.confirm("Chiar vrei sa iesi?");
+
   if (confirmation) {
     if (inputTimeValue) {
-      const time = register();
+      let time;
+      if (isManual) {
+        outputBtn.disabled = true;
+        manualInputField.style.display = "inline";
+        manualInputField.style.outline = "none";
+        manualInputField.style.padding = "5px";
+        manualInputField.focus();
+
+        time = await handleManualInput();
+        manualInputField.value = "";
+        manualInputField.style.display = "none";
+        outputBtn.disabled = false;
+      } else {
+        time = register();
+      }
+
       await saveToLocalStorage("output", time);
       calculateTotalTimeDifference();
       updateDisplay();
@@ -233,8 +249,14 @@ function formatTimeDifference(record) {
 }
 
 inputBtn.addEventListener("click", () => inputTime(false));
-manualIntrareBtn.addEventListener("click", () => inputTime(true));
-outputBtn.addEventListener("click", outputTime);
+manualIntrareBtn.addEventListener("click", () => {
+  if (!inputTimeValue) {
+    inputTime(true);
+  } else {
+    outputTime(true);
+  }
+});
+outputBtn.addEventListener("click", () => outputTime(false));
 // resetBtn.addEventListener("click", resetTime);
 resetBtnRecords.addEventListener("click", resetRecords);
 resetBtnLastRecords.addEventListener("click", deleteLastRecord);
@@ -387,7 +409,6 @@ function isValidTimeFormat(timeString) {
 function handleManualInput() {
   return new Promise((resolve, reject) => {
     manualInputField.addEventListener("blur", function onBlur() {
-      // Remove the blur event listener
       manualInputField.removeEventListener("blur", onBlur);
 
       const manualInput = manualInputField.value;
