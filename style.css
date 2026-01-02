@@ -96,18 +96,19 @@ ul > li {
 /* CHANGE 2026-01-02: Drawer menu UI (overlay + slide-in). */
 /* ===== HAMBURGER MENU ===== */
 .menu-btn {
-  position: fixed;
-  top: 18px;
-  left: 18px;
+  position: absolute;
+  top: 12px;
+  left: 1px; 
   width: 56px;
   height: 56px;
-  border-radius: 10px;
+  padding: 5px;
   border: none;
-  font-size: 28px;
+  font-size: 26px;
   cursor: pointer;
   z-index: 1002;
-  background: rgba(0, 0, 0, 0.25);
+  background: none;
   color: #fff;
+  box-shadow: none;
 }
 /* overlay */
 .menu-overlay {
