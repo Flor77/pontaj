@@ -11,6 +11,36 @@ const displayBtnRecords = document.getElementById("btn__displayRecords");
 const manualInputField = document.getElementById("manualInput");
 const manualIntrareBtn = document.getElementById("btn__manualIntrare");
 
+// CHANGE 2026-01-02: Added hamburger drawer menu for rare actions (display/reset/export). No logic changes.
+// ===== HAMBURGER MENU (UI only) =====
+const menuBtn = document.getElementById("menuBtn");
+const drawerMenu = document.getElementById("drawerMenu");
+const menuOverlay = document.getElementById("menuOverlay");
+function openMenu() {
+  drawerMenu.classList.remove("hidden");
+  menuOverlay.classList.remove("hidden");
+  requestAnimationFrame(() => drawerMenu.classList.add("open"));
+  drawerMenu.setAttribute("aria-hidden", "false");
+}
+function closeMenu() {
+  drawerMenu.classList.remove("open");
+  drawerMenu.setAttribute("aria-hidden", "true");
+  setTimeout(() => {
+    drawerMenu.classList.add("hidden");
+    menuOverlay.classList.add("hidden");
+  }, 220);
+}
+menuBtn.addEventListener("click", () => {
+  if (drawerMenu.classList.contains("open")) closeMenu();
+  else openMenu();
+});
+menuOverlay.addEventListener("click", closeMenu);
+// inchide meniul dupa apasarea unui buton din meniu
+drawerMenu.addEventListener("click", (e) => {
+  if (e.target && e.target.tagName === "BUTTON") closeMenu();
+});
+
+
 // Function to save data to local storage with a Promise
 function saveToLocalStorage(key, value) {
   return new Promise((resolve, reject) => {
@@ -66,12 +96,12 @@ function getCurrentDate() {
     day < 10 ? "0" : ""
   }${day}`;
 }
-
+// CHANGE 2026-01-02: records string[] -> object[]
 function displayRecords() {
   recordsList.innerHTML = "";
   records.forEach((record) => {
     const listItem = document.createElement("li");
-    listItem.textContent = record;
+    listItem.textContent = `${record.date}: ${record.diff}: ${record.input}: ${record.output}`;
     recordsList.appendChild(listItem);
   });
 }
@@ -175,6 +205,7 @@ function resetRecords() {
 }
 
 //Calculate and display the time difference relative to 8:30:00 (regular working time) ,update the "records" array and display records
+// CHANGE 2026-01-02: afisare directa diff (string)
 async function updateDisplay() {
   inputTimeValue = (await getFromLocalStorage("input")) || "";
   outputTimeValue = (await getFromLocalStorage("output")) || "";
@@ -215,14 +246,17 @@ async function updateDisplay() {
     const secondsStr = seconds.toString().padStart(2, "0");
 
     const timeDifferenceString = `${sign}${hoursStr}:${minutesStr}:${secondsStr}`;
-
+    // CHANGE 2026-01-02: afisare directa diff (string)
     document.querySelector("#time__difference").innerHTML =
-      formatTimeDifference(timeDifferenceString);
-
+      timeDifferenceString;
     // Create a record for the current date and time difference
-
-    const record = `${today}: ${timeDifferenceString}: ${inputTimeValue}: ${outputTimeValue}`;
-
+    // CHANGE 2026-01-02: string -> object
+    const record = {
+             date: today,
+             diff: timeDifferenceString,
+             input: inputTimeValue,
+             output: outputTimeValue
+     };
     // Add this record to the beginning of the list
     const existingRecord = records.find((record) => record.startsWith(today));
     if (!existingRecord) {
@@ -298,10 +332,10 @@ function exportRecordsToCSV() {
   }
 
   // Create a CSV content
-  let csvContent = "Time Difference\n"; // Header
-
+  let csvContent = "date,diff,input,output\n"; // Header
+  // CHANGE 2026-01-02: records string -> object (export CSV adapteaza campurile)
   records.forEach((record) => {
-    csvContent += record + "\n";
+    csvContent += `${record.date},${record.diff},${record.input},${record.output}\n`;
   });
 
   // Create a Blob containing the CSV data
@@ -328,7 +362,8 @@ function calculateTotalTimeDifference() {
   let totalDifferenceMillis = 0;
 
   records.forEach((record) => {
-    const timeDifference = record.split(": ")[1].trim();
+    // CHANGE 2026-01-02: records string -> object (diff vine din record.diff, nu din split pe string)
+    const timeDifference = record.diff.trim();
     const matches = timeDifference.match(/^([-+]?)((\d+):)?((\d+):)?(\d+)$/);
 
     if (matches) {
@@ -369,8 +404,8 @@ function calculateTotalTimeDifference() {
   // Apply color based on the sign of the total time difference directly
   totalTimeDifferenceElement.style.color =
     totalSign === "+" ? "#40be25" : "red";
-
-  totalTimeDifferenceElement.textContent = totalTimeDifference;
+  // CHANGE 2026-01-02: UI only - afisare TOTAL fara secunde (HH:MM)
+  totalTimeDifferenceElement.textContent = totalTimeDifference.slice(0, 6);
 }
 
 function deleteLastRecord() {

@@ -92,3 +92,62 @@ ul > li {
   width: 200px;
   color: aliceblue;
 }
+
+/* CHANGE 2026-01-02: Drawer menu UI (overlay + slide-in). */
+/* ===== HAMBURGER MENU ===== */
+.menu-btn {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 1002;
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+}
+/* overlay */
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+}
+/* drawer */
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 78%;
+  max-width: 320px;
+  height: 100%;
+  z-index: 1001;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  transform: translateX(-100%);
+  transition: transform 0.22s ease;
+}
+.drawer.open {
+  transform: translateX(0);
+}
+.drawer-content {
+  padding: 90px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+/* latime/padding */
+.drawer-content button {
+  width: 100%;
+  padding: 16px 14px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+/* helper */
+.hidden {
+  display: none;
+}
