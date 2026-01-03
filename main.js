@@ -10,36 +10,57 @@ const resetBtnLastRecords = document.getElementById("btn__resetLastRecords");
 const displayBtnRecords = document.getElementById("btn__displayRecords");
 const manualInputField = document.getElementById("manualInput");
 const manualIntrareBtn = document.getElementById("btn__manualIntrare");
+const menuBtn = document.getElementById("menuBtn");
+const drawer = document.getElementById("drawer");
+const drawerPanel = document.getElementById("drawerPanel");
+const secondaryActions = document.getElementById("secondaryActions");
 
 // CHANGE 2026-01-02: Added hamburger drawer menu for rare actions (display/reset/export). No logic changes.
 // ===== HAMBURGER MENU (UI only) =====
-const menuBtn = document.getElementById("menuBtn");
-const drawerMenu = document.getElementById("drawerMenu");
-const menuOverlay = document.getElementById("menuOverlay");
-function openMenu() {
-  drawerMenu.classList.remove("hidden");
-  menuOverlay.classList.remove("hidden");
-  requestAnimationFrame(() => drawerMenu.classList.add("open"));
-  drawerMenu.setAttribute("aria-hidden", "false");
+function openDrawer() {
+  drawer.style.display = "block";
 }
-function closeMenu() {
-  drawerMenu.classList.remove("open");
-  drawerMenu.setAttribute("aria-hidden", "true");
-  setTimeout(() => {
-    drawerMenu.classList.add("hidden");
-    menuOverlay.classList.add("hidden");
-  }, 220);
+
+function closeDrawer() {
+  drawer.style.display = "none";
 }
+
+// click pe hamburger
 menuBtn.addEventListener("click", () => {
-  if (drawerMenu.classList.contains("open")) closeMenu();
-  else openMenu();
-});
-menuOverlay.addEventListener("click", closeMenu);
-// inchide meniul dupa apasarea unui buton din meniu
-drawerMenu.addEventListener("click", (e) => {
-  if (e.target && e.target.tagName === "BUTTON") closeMenu();
+  const isOpen = drawer.style.display === "block";
+  if (isOpen) closeDrawer();
+  else openDrawer();
 });
 
+// click pe overlay (închide), dar NU pe panel
+drawer.addEventListener("click", (e) => {
+  if (e.target === drawer) closeDrawer();
+});
+
+// MUTĂ butoanele rare în drawer pe mobil, înapoi pe desktop
+function syncSecondaryActionsPlacement() {
+  const isMobile = window.matchMedia("(max-width: 767px)").matches;
+
+  if (isMobile) {
+    // mută în drawerPanel (dacă nu sunt deja acolo)
+    if (secondaryActions.children.length > 0) {
+      while (secondaryActions.firstChild) {
+        drawerPanel.appendChild(secondaryActions.firstChild);
+      }
+    }
+  } else {
+    // mută înapoi în pagina (dacă sunt în drawerPanel)
+    if (drawerPanel.children.length > 0) {
+      while (drawerPanel.firstChild) {
+        secondaryActions.appendChild(drawerPanel.firstChild);
+      }
+    }
+    closeDrawer();
+  }
+}
+
+window.addEventListener("resize", syncSecondaryActionsPlacement);
+syncSecondaryActionsPlacement();
 
 // Function to save data to local storage with a Promise
 function saveToLocalStorage(key, value) {
@@ -111,7 +132,8 @@ async function inputTime(isManual) {
   if (!inputTimeValue) {
     const now = new Date();
     const today = getCurrentDate();
-    const lastRecord = records.find((record) => record.startsWith(today));
+    // CHANGE 2026-01-03: records string[] -> object[]
+    const lastRecord = records.find((record) => record.date === today);
     if (lastRecord) {
       displayErrorMessage("Te ai inregistrat azi !");
       return;
@@ -135,6 +157,7 @@ async function inputTime(isManual) {
     await saveToLocalStorage("input", time);
     document.querySelector("#ora__intrare").innerHTML = time;
     updateDisplay();
+    updateButtonsState();
   } else if (inputTimeValue) {
     displayErrorMessage("Ai intrare!");
     return;
@@ -165,6 +188,7 @@ async function outputTime(isManual) {
       await saveToLocalStorage("output", time);
       calculateTotalTimeDifference();
       updateDisplay();
+      updateButtonsState();
     } else if (!inputTimeValue) {
       displayErrorMessage("Nu ai intrare!");
       return;
@@ -191,6 +215,7 @@ function resetInputAndOutput() {
   document.querySelector("#ora__intrare").innerHTML = "";
   document.querySelector("#ora__iesire").innerHTML = "";
   updateDisplay();
+  updateButtonsState();
 }
 
 function resetRecords() {
@@ -258,7 +283,8 @@ async function updateDisplay() {
              output: outputTimeValue
      };
     // Add this record to the beginning of the list
-    const existingRecord = records.find((record) => record.startsWith(today));
+    // CHANGE 2026-01-03: records string[] -> object[]
+    const existingRecord = records.find((record) => record.date === today);
     if (!existingRecord) {
       records.unshift(record);
     }
@@ -271,6 +297,22 @@ async function updateDisplay() {
 
     document.querySelector("#time__difference").innerHTML = "";
   }
+}
+// CHANGE 2026-01-03: added
+function updateButtonsState() {
+  const hasInput = !!localStorage.getItem("input");
+  const hasOutput = !!localStorage.getItem("output");
+  const today = getCurrentDate();
+  const hasTodayRecord = records.some((r) => r.date === today);
+
+  // Intrare: dezactivat dacă ai deja intrare în curs SAU dacă ai deja record pe ziua de azi
+  inputBtn.disabled = hasInput || hasTodayRecord;
+
+  // Intrare manuală
+  manualIntrareBtn.disabled = hasTodayRecord;
+
+  // Iesire: activ doar dacă există intrare și nu există deja ieșire
+  outputBtn.disabled = !hasInput || hasOutput;
 }
 
 function formatTimeDifference(record) {
@@ -458,5 +500,6 @@ function handleManualInput() {
 }
 
 updateDisplay();
+updateButtonsState();
 displayRecords();
 calculateTotalTimeDifference();

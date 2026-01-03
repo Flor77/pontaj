@@ -10,14 +10,14 @@ body {
 }
 
 .container {
-  max-width: 250px;
-  margin: auto;
+  width: min(520px, 92vw);
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 1rem;
-  padding: 3rem;
+  padding: 2rem 1rem;
 }
 
 .container p {
@@ -57,27 +57,34 @@ p {
 }
 
 button {
-  padding: 5px 7px;
-  font-size: 1.1rem;
+  padding: 14px 22px;
+  font-size: 1.3rem;
   font-weight: 600;
-  min-width: 8rem;
+  min-width: 10rem;
+  min-height: 3.6rem;
   border: none;
   border-radius: 10px;
   container-type: inline-size;
+}
+
+button:disabled {
+  opacity: 0.99;
+  cursor: not-allowed;
 }
 
 .btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
+  gap: 40px;
 }
 
 .btn button {
-  padding: 5px 7px;
-  font-size: 1.1rem;
+  padding: 14px 22px;
+  font-size: 1.3rem;
   font-weight: 600;
-  min-width: 6rem;
+  min-width: 10rem;
+  min-height: 3.6rem;
   border: none;
   border-radius: 10px;
   container-type: inline-size;
@@ -93,59 +100,71 @@ ul > li {
   color: aliceblue;
 }
 
-/* CHANGE 2026-01-02: Drawer menu UI (overlay + slide-in). */
+/* CHANGE 2026-01-03: Drawer menu UI (overlay + slide-in). */
 /* ===== HAMBURGER MENU ===== */
 .menu-btn {
-  position: absolute !important;
-  top: 8px !important;
-  left: 0px !important;
-  background: none !important;
-  border: none !important;
-  font-size: 30px !important;
-  color: aliceblue !important;
-  box-shadow: none !important;
-  z-index: 2000 !important;
+  position: absolute;
   cursor: pointer;
+  top: 10px;
+  left: 0px;
+  width: fit-content;
+  height: 42px;
+  border: none;
+  font-size: 32px;
+  font-weight: 700;
+  background: transparent;
+  color: #fff;
+  z-index: 1001;
 }
-/* overlay */
-.menu-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 1000;
+
+.menu-btn:active {
+  opacity: 0.6;
 }
-/* drawer */
+
+.menu-btn {
+  display: none;
+}
+
+/* Drawer overlay */
 .drawer {
   position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;          /* hidden by default */
+  z-index: 1000;
+}
+
+/* Panou drawer */
+.drawer-panel {
+  position: absolute;
   top: 0;
   left: 0;
-  width: 78%;
-  max-width: 320px;
+  width: min(320px, 82vw);
   height: 100%;
-  z-index: 1001;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(2px);
-  transform: translateX(-100%);
-  transition: transform 0.22s ease;
-}
-.drawer.open {
-  transform: translateX(0);
-}
-.drawer-content {
-  padding: 90px 18px 18px;
+  background: rgba(0,0,0,0.65);
+  padding: 70px 16px 16px; /* lasă loc pentru butonul hamburger */
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 30px;
 }
-/* latime/padding */
-.drawer-content button {
+
+/* Desktop */
+.secondary-actions {
   width: 100%;
-  padding: 16px 14px;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
 }
-/* helper */
-.hidden {
-  display: none;
+
+/* MOBILE */
+@media (max-width: 767px) {
+  .secondary-actions {
+    display: none;
+  }
+  .menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
