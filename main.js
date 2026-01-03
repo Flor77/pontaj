@@ -19,10 +19,12 @@ const secondaryActions = document.getElementById("secondaryActions");
 // ===== HAMBURGER MENU (UI only) =====
 function openDrawer() {
   drawer.style.display = "block";
+  menuBtn.classList.add("is-hidden")
 }
 
 function closeDrawer() {
   drawer.style.display = "none";
+  menuBtn.classList.remove("is-hidden");
 }
 
 // click pe hamburger
