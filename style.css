@@ -37,11 +37,6 @@ body {
 
 p {
   color: aliceblue;
-  width: 130px;
-  border-radius: 15px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .error-container {
@@ -88,6 +83,18 @@ button:disabled {
   border: none;
   border-radius: 10px;
   container-type: inline-size;
+}
+
+#ora__intrare,
+#ora__iesire,
+#time__difference,
+#total-time-difference{
+  color: aliceblue;
+  width: 130px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 ul {
@@ -162,11 +169,16 @@ ul > li {
 
 /* Desktop */
 .secondary-actions {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
+  width: min(420px, 92vw);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
-  align-items: center;
+  align-items: stretch;
+  justify-items: stretch;
+}
+.secondary-actions button{
+  min-width: 0;              /* important: să nu forțeze lățimea */
+  width: 100%;
 }
 
 /* MOBILE */
@@ -179,4 +191,97 @@ ul > li {
     align-items: center;
     justify-content: center;
   }
+}
+
+/* ===== BREAK UI (status + total break) ===== */
+.work-status{
+  width: auto;                 /* override p{width:130px} */
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 1.6rem;           /* vizibil, dar nu urias */
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: rgba(0,0,0,0.25);
+}
+
+.work-status.is-break{
+  background: rgba(255, 204, 0, 0.18);
+  color: #ffcc00;
+}
+
+.work-status.is-work{
+  background: rgba(64, 190, 37, 0.18);
+  color: #40be25;
+}
+
+.break-total{
+  width: auto;                 /* override p{width:130px} */
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  color: rgb(168, 185, 199);
+  background: rgba(0,0,0,0.18);
+}
+
+#btn__break{
+  min-width: 10rem;
+}
+
+/* ===== State UI: WORK / BREAK / IDLE ===== */
+
+#btn__break{
+  transition: transform 120ms ease, opacity 120ms ease, background 120ms ease;
+}
+
+#btn__break:active{
+  transform: scale(0.98);
+}
+
+/* WORK state */
+#btn__break.is-work{
+  background: rgba(64, 190, 37, 0.18);
+  color: aliceblue;
+  border: 1px solid rgba(64, 190, 37, 0.45);
+}
+
+/* BREAK state */
+#btn__break.is-break{
+  background: rgba(255, 204, 0, 0.18);
+  color: aliceblue;
+  border: 1px solid rgba(255, 204, 0, 0.55);
+}
+
+/* Optional: when disabled, looks clearly disabled */
+#btn__break:disabled{
+  opacity: 0.35;
+}
+
+/* Status pill (override global p width rules already discussed) */
+.work-status{
+  width: auto;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: rgba(0,0,0,0.25);
+}
+
+.work-status.is-work{
+  background: rgba(64, 190, 37, 0.18);
+  color: #40be25;
+}
+
+.work-status.is-break{
+  background: rgba(255, 204, 0, 0.18);
+  color: #ffcc00;
+}
+
+.break-total{
+  width: auto;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  color: rgb(168, 185, 199);
+  background: rgba(0,0,0,0.18);
 }

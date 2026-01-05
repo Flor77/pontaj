@@ -2,7 +2,6 @@ const oraIntrare = document.getElementById("ora__intrare");
 const oraIesire = document.getElementById("ora__iesire");
 const inputBtn = document.getElementById("btn__intrare");
 const outputBtn = document.getElementById("btn__iesire");
-// const resetBtn = document.getElementById("btn__reset");
 const resetBtnRecords = document.getElementById("btn__resetRecords");
 const recordsList = document.getElementById("recordsList");
 const exportBtn = document.getElementById("btn__export");
@@ -14,9 +13,9 @@ const menuBtn = document.getElementById("menuBtn");
 const drawer = document.getElementById("drawer");
 const drawerPanel = document.getElementById("drawerPanel");
 const secondaryActions = document.getElementById("secondaryActions");
+const breakBtn = document.getElementById("btn__break");
 
-// CHANGE 2026-01-02: Added hamburger drawer menu for rare actions (display/reset/export). No logic changes.
-// ===== HAMBURGER MENU (UI only) =====
+// ===== HAMBURGER MENU =====
 function openDrawer() {
   drawer.style.display = "block";
   menuBtn.classList.add("is-hidden")
@@ -27,31 +26,26 @@ function closeDrawer() {
   menuBtn.classList.remove("is-hidden");
 }
 
-// click pe hamburger
 menuBtn.addEventListener("click", () => {
   const isOpen = drawer.style.display === "block";
   if (isOpen) closeDrawer();
   else openDrawer();
 });
 
-// click pe overlay (închide), dar NU pe panel
 drawer.addEventListener("click", (e) => {
   if (e.target === drawer) closeDrawer();
 });
 
-// MUTĂ butoanele rare în drawer pe mobil, înapoi pe desktop
 function syncSecondaryActionsPlacement() {
   const isMobile = window.matchMedia("(max-width: 767px)").matches;
 
   if (isMobile) {
-    // mută în drawerPanel (dacă nu sunt deja acolo)
     if (secondaryActions.children.length > 0) {
       while (secondaryActions.firstChild) {
         drawerPanel.appendChild(secondaryActions.firstChild);
       }
     }
   } else {
-    // mută înapoi în pagina (dacă sunt în drawerPanel)
     if (drawerPanel.children.length > 0) {
       while (drawerPanel.firstChild) {
         secondaryActions.appendChild(drawerPanel.firstChild);
@@ -64,7 +58,6 @@ function syncSecondaryActionsPlacement() {
 window.addEventListener("resize", syncSecondaryActionsPlacement);
 syncSecondaryActionsPlacement();
 
-// Function to save data to local storage with a Promise
 function saveToLocalStorage(key, value) {
   return new Promise((resolve, reject) => {
     try {
@@ -76,7 +69,6 @@ function saveToLocalStorage(key, value) {
   });
 }
 
-// Function to get data from local storage with a Promise
 function getFromLocalStorage(key) {
   return new Promise((resolve, reject) => {
     try {
@@ -119,22 +111,21 @@ function getCurrentDate() {
     day < 10 ? "0" : ""
   }${day}`;
 }
-// CHANGE 2026-01-02: records string[] -> object[]
+
 function displayRecords() {
   recordsList.innerHTML = "";
   records.forEach((record) => {
     const listItem = document.createElement("li");
-    listItem.textContent = `${record.date}: ${record.diff}: ${record.input}: ${record.output}`;
+    const breakStr = record.break || "00:00";
+    listItem.textContent = `${record.date}: ${record.diff}: ${breakStr}: ${record.input}: ${record.output}`;
     recordsList.appendChild(listItem);
   });
 }
 
-// Function to display the current time
 async function inputTime(isManual) {
   if (!inputTimeValue) {
     const now = new Date();
     const today = getCurrentDate();
-    // CHANGE 2026-01-03: records string[] -> object[]
     const lastRecord = records.find((record) => record.date === today);
     if (lastRecord) {
       displayErrorMessage("Te ai inregistrat azi !");
@@ -160,6 +151,7 @@ async function inputTime(isManual) {
     document.querySelector("#ora__intrare").innerHTML = time;
     updateDisplay();
     updateButtonsState();
+    updateBreakUI();
   } else if (inputTimeValue) {
     displayErrorMessage("Ai intrare!");
     return;
@@ -170,6 +162,10 @@ async function outputTime(isManual) {
   const confirmation = window.confirm("Chiar vrei sa iesi?");
 
   if (confirmation) {
+    if (localStorage.getItem("breakStart")) {
+       displayErrorMessage("Ești în pauză. Apasă Reia!");
+       return;
+      }
     if (inputTimeValue) {
       let time;
       if (isManual) {
@@ -191,6 +187,7 @@ async function outputTime(isManual) {
       calculateTotalTimeDifference();
       updateDisplay();
       updateButtonsState();
+      updateBreakUI();
     } else if (!inputTimeValue) {
       displayErrorMessage("Nu ai intrare!");
       return;
@@ -214,10 +211,13 @@ function resetTime() {
 function resetInputAndOutput() {
   localStorage.removeItem("input");
   localStorage.removeItem("output");
+  localStorage.removeItem("breakStart");
+  localStorage.setItem("breakTotal", "00:00:00");
   document.querySelector("#ora__intrare").innerHTML = "";
   document.querySelector("#ora__iesire").innerHTML = "";
   updateDisplay();
   updateButtonsState();
+  updateBreakUI();
 }
 
 function resetRecords() {
@@ -230,9 +230,6 @@ function resetRecords() {
     location.reload();
   }
 }
-
-//Calculate and display the time difference relative to 8:30:00 (regular working time) ,update the "records" array and display records
-// CHANGE 2026-01-02: afisare directa diff (string)
 async function updateDisplay() {
   inputTimeValue = (await getFromLocalStorage("input")) || "";
   outputTimeValue = (await getFromLocalStorage("output")) || "";
@@ -255,12 +252,15 @@ async function updateDisplay() {
     const outputMillis =
       outputHours * 3600000 + outputMinutes * 60000 + outputSeconds * 1000;
     const regularWorkingMillis = 8 * 3600000 + 30 * 60000;
+    const breakTotal = localStorage.getItem("breakTotal") || "00:00:00";
+    const breakParts = breakTotal.split(":");
+    const breakH = parseInt(breakParts[0], 10) || 0;
+    const breakM = parseInt(breakParts[1], 10) || 0;
+    const breakS = parseInt(breakParts[2], 10) || 0;
+    const breakMillis = breakH * 3600000 + breakM * 60000 + breakS * 1000;
 
     const timeDifferenceMillis =
-      outputMillis - inputMillis - regularWorkingMillis;
-
-    // Check if the current record exists in the list of records
-
+         outputMillis - inputMillis - breakMillis - regularWorkingMillis;
     const sign = timeDifferenceMillis < 0 ? "-" : "+";
     const absTimeDifferenceMillis = Math.abs(timeDifferenceMillis);
 
@@ -273,47 +273,34 @@ async function updateDisplay() {
     const secondsStr = seconds.toString().padStart(2, "0");
 
     const timeDifferenceString = `${sign}${hoursStr}:${minutesStr}:${secondsStr}`;
-    // CHANGE 2026-01-02: afisare directa diff (string)
     document.querySelector("#time__difference").innerHTML =
       timeDifferenceString;
-    // Create a record for the current date and time difference
-    // CHANGE 2026-01-02: string -> object
+    const breakHHMM = breakTotal.slice(0, 5);
     const record = {
              date: today,
              diff: timeDifferenceString,
+             break: breakHHMM,
              input: inputTimeValue,
              output: outputTimeValue
      };
-    // Add this record to the beginning of the list
-    // CHANGE 2026-01-03: records string[] -> object[]
     const existingRecord = records.find((record) => record.date === today);
     if (!existingRecord) {
       records.unshift(record);
     }
-
-    // Update the "records" array in local storage
     await saveToLocalStorage("records", JSON.stringify(records));
-
     calculateTotalTimeDifference();
     resetInputAndOutput();
-
     document.querySelector("#time__difference").innerHTML = "";
   }
 }
-// CHANGE 2026-01-03: added
+
 function updateButtonsState() {
   const hasInput = !!localStorage.getItem("input");
   const hasOutput = !!localStorage.getItem("output");
   const today = getCurrentDate();
   const hasTodayRecord = records.some((r) => r.date === today);
-
-  // Intrare: dezactivat dacă ai deja intrare în curs SAU dacă ai deja record pe ziua de azi
   inputBtn.disabled = hasInput || hasTodayRecord;
-
-  // Intrare manuală
   manualIntrareBtn.disabled = hasTodayRecord;
-
-  // Iesire: activ doar dacă există intrare și nu există deja ieșire
   outputBtn.disabled = !hasInput || hasOutput;
 }
 
@@ -335,11 +322,10 @@ manualIntrareBtn.addEventListener("click", () => {
   }
 });
 outputBtn.addEventListener("click", () => outputTime(false));
-// resetBtn.addEventListener("click", resetTime);
 resetBtnRecords.addEventListener("click", resetRecords);
 resetBtnLastRecords.addEventListener("click", deleteLastRecord);
 displayBtnRecords.addEventListener("click", toggleRecordsList);
-// displayBtnRecords.addEventListener("click", displayRecordsList);
+breakBtn.addEventListener("click", toggleBreak);
 
 document.querySelector("#ora__intrare").innerHTML = inputTimeValue;
 document.querySelector("#ora__iesire").innerHTML = outputTimeValue;
@@ -355,7 +341,7 @@ if (!outputTimeValue) {
 function displayErrorMessage(message) {
   const errorMessageElement = document.getElementById("error-message");
   errorMessageElement.textContent = message;
-  errorMessageElement.style.display = "block"; // Show the error message element
+  errorMessageElement.style.display = "block";
   setTimeout(clearErrorMessage, 1000);
 }
 
@@ -369,35 +355,23 @@ exportBtn.addEventListener("click", () => {
 });
 
 function exportRecordsToCSV() {
-  // Ensure there are records to export
   if (records.length === 0) {
     alert("No records to export.");
     return;
   }
-
-  // Create a CSV content
-  let csvContent = "date,diff,input,output\n"; // Header
-  // CHANGE 2026-01-02: records string -> object (export CSV adapteaza campurile)
+  let csvContent = "date,diff,break,input,output\n";
   records.forEach((record) => {
-    csvContent += `${record.date},${record.diff},${record.input},${record.output}\n`;
+    const breakStr = record.break || "00:00";
+    csvContent += `${record.date},${record.diff},${breakStr},${record.input},${record.output}\n`;
+
   });
-
-  // Create a Blob containing the CSV data
   const blob = new Blob([csvContent], { type: "text/csv" });
-
-  // Create a URL for the Blob
   const url = URL.createObjectURL(blob);
-
-  // Create a download link
   const a = document.createElement("a");
   a.href = url;
-  a.download = "records.csv"; // You can customize the filename
+  a.download = "records.csv";
   document.body.appendChild(a);
-
-  // Trigger the click event on the link to initiate the download
   a.click();
-
-  // Clean up
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
@@ -406,7 +380,6 @@ function calculateTotalTimeDifference() {
   let totalDifferenceMillis = 0;
 
   records.forEach((record) => {
-    // CHANGE 2026-01-02: records string -> object (diff vine din record.diff, nu din split pe string)
     const timeDifference = record.diff.trim();
     const matches = timeDifference.match(/^([-+]?)((\d+):)?((\d+):)?(\d+)$/);
 
@@ -445,10 +418,8 @@ function calculateTotalTimeDifference() {
     "total-time-difference"
   );
 
-  // Apply color based on the sign of the total time difference directly
   totalTimeDifferenceElement.style.color =
     totalSign === "+" ? "#40be25" : "red";
-  // CHANGE 2026-01-02: UI only - afisare TOTAL fara secunde (HH:MM)
   totalTimeDifferenceElement.textContent = totalTimeDifference.slice(0, 6);
 }
 
@@ -467,22 +438,47 @@ function deleteLastRecord() {
 }
 
 function displayRecordsList() {
-  recordsList.style.display = "block"; // Show the records list
+  recordsList.style.display = "block";
   displayRecords();
 }
 
 function toggleRecordsList() {
   if (recordsList.style.display === "none") {
-    recordsList.style.display = "block"; // Show the records list
+    recordsList.style.display = "block";
     displayRecords();
   } else {
-    recordsList.style.display = "none"; // Hide the records list
+    recordsList.style.display = "none";
   }
 }
 
 function isValidTimeFormat(timeString) {
   const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/;
   return timeRegex.test(timeString);
+}
+
+function timeToSeconds(t) {
+  if (!t || !isValidTimeFormat(t)) return 0;
+  const [h, m, s] = t.split(":").map((x) => parseInt(x, 10));
+  return h * 3600 + m * 60 + s;
+}
+
+function secondsToTime(totalSeconds) {
+  const sign = totalSeconds < 0 ? "-" : "";
+  let x = Math.abs(totalSeconds);
+
+  const h = Math.floor(x / 3600);
+  x %= 3600;
+  const m = Math.floor(x / 60);
+  const s = x % 60;
+
+  const hh = String(h).padStart(2, "0");
+  const mm = String(m).padStart(2, "0");
+  const ss = String(s).padStart(2, "0");
+  return `${sign}${hh}:${mm}:${ss}`;
+}
+
+function diffSeconds(t1, t2) {
+  return timeToSeconds(t2) - timeToSeconds(t1);
 }
 
 function handleManualInput() {
@@ -501,7 +497,105 @@ function handleManualInput() {
   });
 }
 
+function updateBreakUI() {
+  const hasInput = !!localStorage.getItem("input");
+  const breakStart = localStorage.getItem("breakStart");
+  const breakTotal = localStorage.getItem("breakTotal") || "00:00:00";
+
+  const breakBtn = document.getElementById("btn__break");
+  const statusEl = document.getElementById("work-status");
+  const breakTotalEl = document.getElementById("break-total");
+  const outputBtn = document.getElementById("btn__iesire");
+
+  if (!breakBtn || !statusEl || !breakTotalEl) return;
+  const breakHHMM = breakTotal.slice(0, 5);
+
+  /* =========================
+     IDLE – fara intrare
+     ========================= */
+  if (!hasInput) {
+    breakBtn.disabled = true;
+    breakBtn.textContent = "Pauză";
+    breakBtn.classList.remove("is-work", "is-break");
+
+    statusEl.style.display = "none";
+    breakTotalEl.style.display = "none";
+
+    return;
+  }
+
+  /* =========================
+     Zi inceputa → afiseaza pauza
+     ========================= */
+  breakTotalEl.textContent = `Pauză azi: ${breakHHMM}`;
+  breakTotalEl.style.display = "flex";
+
+  /* =========================
+     BREAK
+     ========================= */
+  if (breakStart) {
+    breakBtn.disabled = false;
+    breakBtn.textContent = "Reia";
+    breakBtn.classList.remove("is-work");
+    breakBtn.classList.add("is-break");
+
+    statusEl.textContent = "PAUZĂ";
+    statusEl.style.display = "flex";
+    statusEl.classList.remove("is-work");
+    statusEl.classList.add("is-break");
+    outputBtn.disabled = true;
+    return;
+  }
+
+  /* =========================
+     WORK
+     ========================= */
+  breakBtn.disabled = false;
+  breakBtn.textContent = "Pauză";
+  breakBtn.classList.remove("is-break");
+  breakBtn.classList.add("is-work");
+
+  statusEl.textContent = "LUCRU";
+  statusEl.style.display = "flex";
+  statusEl.classList.remove("is-break");
+  statusEl.classList.add("is-work");
+}
+
+function toggleBreak() {
+  const hasInput = !!localStorage.getItem("input");
+  if (!hasInput) {
+    displayErrorMessage("Nu ai intrare!");
+    return;
+  }
+  const breakStart = localStorage.getItem("breakStart");
+  let breakTotal = localStorage.getItem("breakTotal");
+
+  if (!breakTotal) {
+    breakTotal = "00:00:00";
+    localStorage.setItem("breakTotal", breakTotal);
+  }
+  if (!breakStart) {
+    const now = register();
+    localStorage.setItem("breakStart", now);
+    updateButtonsState();
+    updateBreakUI();
+    return;
+  }
+  const now = register();
+  const delta = diffSeconds(breakStart, now);
+  if (delta < 0) {
+    displayErrorMessage("Ora invalidă pentru pauză!");
+    return;
+  }
+  const totalSeconds = timeToSeconds(breakTotal) + delta;
+  localStorage.setItem("breakTotal", secondsToTime(totalSeconds));
+  localStorage.removeItem("breakStart");
+  updateButtonsState();
+  updateBreakUI();
+}
+
 updateDisplay();
 updateButtonsState();
+updateBreakUI();
 displayRecords();
 calculateTotalTimeDifference();
