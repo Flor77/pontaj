@@ -540,6 +540,7 @@ function updateBreakUI() {
   const hasInput = !!localStorage.getItem("input");
   const breakStart = localStorage.getItem("breakStart");
   const breakTotal = localStorage.getItem("breakTotal") || "00:00:00";
+  const isBreak = !!breakStart;
 
   const breakBtn = document.getElementById("btn__break");
   const statusEl = document.getElementById("work-status");
@@ -564,15 +565,16 @@ function updateBreakUI() {
   }
 
   /* =========================
-     Zi inceputa → afiseaza pauza
+     Zi inceputa → Nu afiseaza pauza
      ========================= */
   breakTotalEl.textContent = `Pauză azi: ${breakHHMM}`;
-  breakTotalEl.style.display = "flex";
+  const hasBreak = breakHHMM !== "00:00";
+  breakTotalEl.style.display = hasBreak ? "flex" : "none";
 
   /* =========================
      BREAK
      ========================= */
-  if (breakStart) {
+  if (isBreak) {
     breakBtn.disabled = false;
     breakBtn.textContent = "Reia";
     breakBtn.classList.remove("is-work");
@@ -613,7 +615,6 @@ function toggleBreak() {
     breakTotal = "00:00:00";
     localStorage.setItem("breakTotal", breakTotal);
   }
-  // Dacă nu ești în pauză -> începe pauza (cu confirmare)
   if (!breakStart) {
    const confirmBreak = window.confirm("Intri în pauză acum?");
   if (!confirmBreak) return;

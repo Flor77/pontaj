@@ -161,7 +161,7 @@ ul > li {
   width: min(320px, 82vw);
   height: 100%;
   background: rgba(0,0,0,0.65);
-  padding: 70px 16px 16px; /* lasă loc pentru butonul hamburger */
+  padding: 70px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 30px;
@@ -177,7 +177,7 @@ ul > li {
   justify-items: stretch;
 }
 .secondary-actions button{
-  min-width: 0;              /* important: să nu forțeze lățimea */
+  min-width: 0;
   width: 100%;
 }
 
@@ -195,10 +195,10 @@ ul > li {
 
 /* ===== BREAK UI (status + total break) ===== */
 .work-status{
-  width: auto;                 /* override p{width:130px} */
+  width: auto; 
   padding: 8px 16px;
   border-radius: 12px;
-  font-size: 1.6rem;           /* vizibil, dar nu urias */
+  font-size: 1.6rem; 
   font-weight: 800;
   letter-spacing: 2px;
   background: rgba(0,0,0,0.25);
@@ -215,12 +215,21 @@ ul > li {
 }
 
 .break-total{
-  width: auto;                 /* override p{width:130px} */
+  width: auto; 
   padding: 6px 14px;
   border-radius: 12px;
-  font-size: 1.05rem;
+  font-size: 0.85rem;
   color: rgb(168, 185, 199);
   background: rgba(0,0,0,0.18);
+}
+
+.work-status,
+.work-status.is-work,
+.work-status.is-break,
+.break-total {
+  background: none !important;
+  padding: 0;
+  border-radius: 0;
 }
 
 #btn__break{
