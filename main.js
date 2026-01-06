@@ -613,13 +613,19 @@ function toggleBreak() {
     breakTotal = "00:00:00";
     localStorage.setItem("breakTotal", breakTotal);
   }
+  // Dacă nu ești în pauză -> începe pauza (cu confirmare)
   if (!breakStart) {
-    const now = register();
-    localStorage.setItem("breakStart", now);
-    updateButtonsState();
-    updateBreakUI();
-    return;
+   const confirmBreak = window.confirm("Intri în pauză acum?");
+  if (!confirmBreak) return;
+
+   const now = register();
+   localStorage.setItem("breakStart", now);
+
+   updateButtonsState();
+   updateBreakUI();
+   return;
   }
+
   const now = register();
   const delta = diffSeconds(breakStart, now);
   if (delta < 0) {
