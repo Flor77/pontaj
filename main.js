@@ -221,15 +221,26 @@ function resetInputAndOutput() {
 }
 
 function resetRecords() {
-  const confirmation = window.confirm("Chiar vrei sa stergi?");
+  const confirmation = window.prompt(
+    "ATENȚIE!\nAceastă acțiune va șterge TOATE înregistrările.\n\nPentru confirmare, tastează exact: STERGE"
+  );
 
-  if (confirmation) {
-    localStorage.removeItem("records");
-    recordsList.innerHTML = "";
-    updateDisplay();
-    location.reload();
+  if (confirmation !== "STERGE") {
+    displayErrorMessage("Operațiune anulată.");
+    return;
   }
+
+  localStorage.removeItem("records");
+  recordsList.innerHTML = "";
+
+  calculateTotalTimeDifference();
+  updateDisplay();
+  updateButtonsState();
+  updateBreakUI();
+
+  location.reload();
 }
+
 async function updateDisplay() {
   inputTimeValue = (await getFromLocalStorage("input")) || "";
   outputTimeValue = (await getFromLocalStorage("output")) || "";
@@ -424,12 +435,40 @@ function calculateTotalTimeDifference() {
 }
 
 function deleteLastRecord() {
-  const confirmation = window.confirm("Chiar vrei sa stergi?");
-  const records = JSON.parse(localStorage.getItem("records")) || [];
+  const hasInput = !!localStorage.getItem("input");
+  const hasOutput = !!localStorage.getItem("output");
+  const today = getCurrentDate();
 
-  if (confirmation && records.length > 0) {
-    records.shift();
-    localStorage.setItem("records", JSON.stringify(records));
+  const recordsLS = JSON.parse(localStorage.getItem("records")) || [];
+  const hasTodayRecord = recordsLS.some((r) => r.date === today);
+
+  if (hasInput && !hasTodayRecord) {
+    const confirmation = window.confirm(
+      "Azi ai o zi în curs (ai intrare). Vrei să resetezi ziua curentă (intrare/pauze) fără să ștergi istoricul?"
+    );
+
+    if (confirmation) {
+      localStorage.removeItem("input");
+      localStorage.removeItem("output");
+      localStorage.removeItem("breakStart");
+      localStorage.setItem("breakTotal", "00:00:00");
+
+      document.querySelector("#ora__intrare").innerHTML = "";
+      document.querySelector("#ora__iesire").innerHTML = "";
+      document.querySelector("#time__difference").innerHTML = "";
+
+      updateDisplay();
+      updateButtonsState();
+      updateBreakUI();
+    }
+    return;
+  }
+
+  const confirmation = window.confirm("Chiar vrei să ștergi ultima înregistrare salvată?");
+  if (confirmation && recordsLS.length > 0) {
+    recordsLS.shift();
+    localStorage.setItem("records", JSON.stringify(recordsLS));
+
     calculateTotalTimeDifference();
     displayRecords();
     updateDisplay();
