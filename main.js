@@ -576,7 +576,7 @@ function updateBreakUI() {
      ========================= */
   if (isBreak) {
     breakBtn.disabled = false;
-    breakBtn.textContent = "Reia";
+    breakBtn.textContent = "REIA";
     breakBtn.classList.remove("is-work");
     breakBtn.classList.add("is-break");
 

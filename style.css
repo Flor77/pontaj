@@ -248,16 +248,16 @@ ul > li {
 
 /* WORK state */
 #btn__break.is-work{
-  background: rgba(64, 190, 37, 0.18);
-  color: aliceblue;
-  border: 1px solid rgba(64, 190, 37, 0.45);
+  background: #a0651d !important;
+  /* color: aliceblue; */
+  /* border: 1px solid rgba(64, 190, 37, 0.45); */
 }
 
 /* BREAK state */
 #btn__break.is-break{
-  background: rgba(255, 204, 0, 0.18);
-  color: aliceblue;
-  border: 1px solid rgba(255, 204, 0, 0.55);
+  background: #14ca66 !important;
+  /* color: aliceblue; */
+  /* border: 1px solid rgba(255, 204, 0, 0.55); */
 }
 
 /* Optional: when disabled, looks clearly disabled */
