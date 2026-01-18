@@ -671,6 +671,31 @@ function toggleBreak() {
   updateBreakUI();
 }
 
+function showUpdateBanner() {
+  const banner = document.createElement("div");
+  banner.textContent = "Update disponibil. Repornește aplicația.";
+  banner.style.position = "fixed";
+  banner.style.bottom = "10px";
+  banner.style.left = "50%";
+  banner.style.transform = "translateX(-50%)";
+  banner.style.background = "#222";
+  banner.style.color = "#fff";
+  banner.style.padding = "10px 14px";
+  banner.style.borderRadius = "8px";
+  banner.style.zIndex = "9999";
+
+  banner.addEventListener("click", () => {
+    window.location.reload();
+  });
+  document.body.appendChild(banner);
+}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    showUpdateBanner();
+  });
+}
+
 updateDisplay();
 updateButtonsState();
 updateBreakUI();
