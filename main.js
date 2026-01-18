@@ -18,7 +18,7 @@ const breakBtn = document.getElementById("btn__break");
 // ===== HAMBURGER MENU =====
 function openDrawer() {
   drawer.style.display = "block";
-  menuBtn.classList.add("is-hidden")
+  menuBtn.classList.add("is-hidden");
 }
 
 function closeDrawer() {
@@ -81,10 +81,9 @@ function getFromLocalStorage(key) {
 }
 
 let inputTimeValue = localStorage.getItem("input") || "";
-
 let outputTimeValue = localStorage.getItem("output") || "";
-
 const records = JSON.parse(localStorage.getItem("records")) || [];
+let manualMode = null; // "input" | "output"
 
 function register() {
   const now = new Date();
@@ -163,9 +162,9 @@ async function outputTime(isManual) {
 
   if (confirmation) {
     if (localStorage.getItem("breakStart")) {
-       displayErrorMessage("Ești în pauză. Apasă Reia!");
-       return;
-      }
+      displayErrorMessage("Ești în pauză. Apasă Reia!");
+      return;
+    }
     if (inputTimeValue) {
       let time;
       if (isManual) {
@@ -222,7 +221,7 @@ function resetInputAndOutput() {
 
 function resetRecords() {
   const confirmation = window.prompt(
-    "ATENȚIE!\nAceastă acțiune va șterge TOATE înregistrările.\n\nPentru confirmare, tastează exact: STERGE"
+    "ATENȚIE!\nAceastă acțiune va șterge TOATE înregistrările.\n\nPentru confirmare, tastează exact: STERGE",
   );
 
   if (confirmation !== "STERGE") {
@@ -271,7 +270,7 @@ async function updateDisplay() {
     const breakMillis = breakH * 3600000 + breakM * 60000 + breakS * 1000;
 
     const timeDifferenceMillis =
-         outputMillis - inputMillis - breakMillis - regularWorkingMillis;
+      outputMillis - inputMillis - breakMillis - regularWorkingMillis;
     const sign = timeDifferenceMillis < 0 ? "-" : "+";
     const absTimeDifferenceMillis = Math.abs(timeDifferenceMillis);
 
@@ -288,12 +287,12 @@ async function updateDisplay() {
       timeDifferenceString;
     const breakHHMM = breakTotal.slice(0, 5);
     const record = {
-             date: today,
-             diff: timeDifferenceString,
-             break: breakHHMM,
-             input: inputTimeValue,
-             output: outputTimeValue
-     };
+      date: today,
+      diff: timeDifferenceString,
+      break: breakHHMM,
+      input: inputTimeValue,
+      output: outputTimeValue,
+    };
     const existingRecord = records.find((record) => record.date === today);
     if (!existingRecord) {
       records.unshift(record);
@@ -325,11 +324,42 @@ function formatTimeDifference(record) {
 }
 
 inputBtn.addEventListener("click", () => inputTime(false));
-manualIntrareBtn.addEventListener("click", () => {
+manualIntrareBtn.addEventListener("click", async () => {
   if (!inputTimeValue) {
-    inputTime(true);
+    manualMode = "input";
+  } else if (inputTimeValue && !outputTimeValue) {
+    manualMode = "output";
   } else {
-    outputTime(true);
+    return;
+  }
+
+  manualInputField.style.display = "inline";
+  manualInputField.value = "";
+  manualInputField.focus();
+
+  try {
+    const time = await handleManualInput();
+
+    if (manualMode === "input") {
+      await saveToLocalStorage("input", time);
+      document.querySelector("#ora__intrare").innerHTML = time;
+    }
+
+    if (manualMode === "output") {
+      const confirmation = window.confirm("Chiar vrei sa iesi?");
+      if (!confirmation) return;
+
+      await saveToLocalStorage("output", time);
+      calculateTotalTimeDifference();
+    }
+
+    updateDisplay();
+    updateButtonsState();
+  } catch (err) {
+    // format invalid – mesajul e deja afișat
+  } finally {
+    manualMode = null;
+    manualInputField.style.display = "none";
   }
 });
 outputBtn.addEventListener("click", () => outputTime(false));
@@ -374,7 +404,6 @@ function exportRecordsToCSV() {
   records.forEach((record) => {
     const breakStr = record.break || "00:00";
     csvContent += `${record.date},${record.diff},${breakStr},${record.input},${record.output}\n`;
-
   });
   const blob = new Blob([csvContent], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
@@ -426,7 +455,7 @@ function calculateTotalTimeDifference() {
   const totalTimeDifference = `${totalSign}${hoursStr}:${minutesStr}:${secondsStr}`;
 
   const totalTimeDifferenceElement = document.getElementById(
-    "total-time-difference"
+    "total-time-difference",
   );
 
   totalTimeDifferenceElement.style.color =
@@ -444,7 +473,7 @@ function deleteLastRecord() {
 
   if (hasInput && !hasTodayRecord) {
     const confirmation = window.confirm(
-      "Azi ai o zi în curs (ai intrare). Vrei să resetezi ziua curentă (intrare/pauze) fără să ștergi istoricul?"
+      "Azi ai o zi în curs (ai intrare). Vrei să resetezi ziua curentă (intrare/pauze) fără să ștergi istoricul?",
     );
 
     if (confirmation) {
@@ -464,7 +493,9 @@ function deleteLastRecord() {
     return;
   }
 
-  const confirmation = window.confirm("Chiar vrei să ștergi ultima înregistrare salvată?");
+  const confirmation = window.confirm(
+    "Chiar vrei să ștergi ultima înregistrare salvată?",
+  );
   if (confirmation && recordsLS.length > 0) {
     recordsLS.shift();
     localStorage.setItem("records", JSON.stringify(recordsLS));
@@ -616,15 +647,15 @@ function toggleBreak() {
     localStorage.setItem("breakTotal", breakTotal);
   }
   if (!breakStart) {
-   const confirmBreak = window.confirm("Intri în pauză acum?");
-  if (!confirmBreak) return;
+    const confirmBreak = window.confirm("Intri în pauză acum?");
+    if (!confirmBreak) return;
 
-   const now = register();
-   localStorage.setItem("breakStart", now);
+    const now = register();
+    localStorage.setItem("breakStart", now);
 
-   updateButtonsState();
-   updateBreakUI();
-   return;
+    updateButtonsState();
+    updateBreakUI();
+    return;
   }
 
   const now = register();
